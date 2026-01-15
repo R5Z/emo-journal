@@ -8,22 +8,38 @@ import { LexiconItem } from '../../types';
  * 2. 언급 횟수가 같으면 카테고리 ID가 낮은 순(오름차순)으로 정렬
  */
 export const analyzeEmotion = (text: string): number[] => {
-  if (!text.trim()) return [];
+  console.log('--- [분석기 동작 시작] ---');
+  console.log('1. 입력 텍스트:', text);
+  
+  // 사전 데이터 로드 확인 (가장 먼저 체크해야 할 부분)
+  if (!EMOTION_LEXICON || EMOTION_LEXICON.length === 0) {
+    console.error('❌ 에러: EMOTION_LEXICON 데이터가 비어있거나 경로가 잘못되었습니다.');
+    return [];
+  }
+  
+  console.log(`2. 현재 로드된 사전 단어 수: ${EMOTION_LEXICON.length}개`);
+
+  if (!text.trim()) {
+    console.log('입력값이 비어있습니다.');
+    return [];
+  }
 
   // 1. 카테고리별 빈도수 계산 (categoryId -> count)
   const counts: Record<number, number> = {};
 
   EMOTION_LEXICON.forEach((item: LexiconItem) => {
-    // matchType이 'contains'인 경우 단순 포함 여부 확인
-    // MVP까지는 includes, 이후 정규표현식 포함
     if (text.includes(item.phrase)) {
+      console.log(`✨ 매칭 성공: [${item.phrase}] -> 카테고리 ${item.categoryId}`);
       counts[item.categoryId] = (counts[item.categoryId] || 0) + 1;
     }
   });
 
   // 2. 결과가 없으면 빈 배열 반환
   const categoryIds = Object.keys(counts).map(Number);
-  if (categoryIds.length === 0) return [];
+  if (categoryIds.length === 0) {
+    console.log('3. 결과: 매칭된 감정 단어가 없습니다.');
+    return [];
+  }
 
   // 3. 정렬 로직 적용
   // - 빈도수(counts) 내림차순
@@ -36,5 +52,9 @@ export const analyzeEmotion = (text: string): number[] => {
   });
 
   // 4. 상위 최대 2개만 반환
-  return sortedIds.slice(0, 2);
+  const result = sortedIds.slice(0, 2);
+  console.log('4. 분석 최종 결과 (ID 리스트):', result);
+  console.log('--- [분석기 종료] ---');
+  
+  return result;
 };
