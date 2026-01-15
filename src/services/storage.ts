@@ -1,13 +1,8 @@
 import * as SQLite from 'expo-sqlite';
 import { JournalEntry } from '../types';
 
-// DB 연결
 const db = SQLite.openDatabaseSync('journal.db');
 
-/**
- * DB 초기화: 테이블 생성
- * emotionCategoryIds는 TEXT 타입으로 저장 (JSON string)
- */
 export const initDB = async () => {
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
@@ -15,48 +10,44 @@ export const initDB = async () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       content TEXT NOT NULL,
       emotionCategoryIds TEXT, 
-      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      createdAt DATETIME -- DEFAULT 제거: saveEntry에서 직접 입력
     );
   `);
 };
 
 /**
- * 일기 저장
- * @param content 일기 내용
- * @param categoryIds 감정 분석 결과 ID 배열 (최대 2개)
+ * 일기 저장 (한국 시간 대응 버전)
  */
 export const saveEntry = async (content: string, categoryIds: number[]) => {
-  // 배열을 "[1, 2]" 형태의 문자열로 변환하여 저장
   const jsonIds = JSON.stringify(categoryIds);
   
+  // 1. 한국 시간(로컬) 문자열 생성 (포맷: YYYY-MM-DD HH:mm:ss)
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  const localIsoString = new Date(now.getTime() - offset).toISOString();
+  const formattedTimestamp = localIsoString.replace('T', ' ').split('.')[0];
+
+  console.log('💾 DB 저장 시각:', formattedTimestamp);
+
   const result = await db.runAsync(
-    'INSERT INTO entries (content, emotionCategoryIds) VALUES (?, ?);',
-    [content, jsonIds]
+    'INSERT INTO entries (content, emotionCategoryIds, createdAt) VALUES (?, ?, ?);',
+    [content, jsonIds, formattedTimestamp] // 직접 생성한 시간을 넣습니다.
   );
   return result.lastInsertRowId;
 };
 
-/**
- * 모든 일기 조회
- * 저장된 JSON 문자열을 다시 배열로 변환하여 반환
- */
 export const getAllEntries = async (): Promise<JournalEntry[]> => {
   const rows = await db.getAllAsync('SELECT * FROM entries ORDER BY createdAt DESC;');
   
   return rows.map((row: any) => ({
     id: row.id,
     content: row.content,
-    // 문자열 "[1, 2]"를 다시 [1, 2] 배열로 변환
     emotionCategoryIds: row.emotionCategoryIds ? JSON.parse(row.emotionCategoryIds) : [],
     createdAt: row.createdAt,
   }));
 };
 
-/**
- * 특정 날짜의 일기 조회 (나중에 타임라인 뷰에서 사용)
- */
 export const getEntriesByDate = async (dateStr: string): Promise<JournalEntry[]> => {
-  // dateStr 예시: "2024-05-20"
   const rows = await db.getAllAsync(
     "SELECT * FROM entries WHERE date(createdAt) = date(?) ORDER BY createdAt ASC;",
     [dateStr]
