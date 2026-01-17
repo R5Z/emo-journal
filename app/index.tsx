@@ -110,7 +110,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          entries.map(entry => <EntryCard key={entry.id} entry={entry} />)
+          entries.map(entry => <EntryCard key={entry.id} entry={entry} onRefresh={loadData} />)
         )}
       </ScrollView>
 

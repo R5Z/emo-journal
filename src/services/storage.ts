@@ -10,32 +10,54 @@ export const initDB = async () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       content TEXT NOT NULL,
       emotionCategoryIds TEXT, 
-      createdAt DATETIME -- DEFAULT 제거: saveEntry에서 직접 입력
+      createdAt DATETIME 
     );
   `);
 };
 
 /**
- * 일기 저장 (한국 시간 대응 버전)
+ * [CREATE] 일기 저장
  */
 export const saveEntry = async (content: string, categoryIds: number[]) => {
   const jsonIds = JSON.stringify(categoryIds);
   
-  // 1. 한국 시간(로컬) 문자열 생성 (포맷: YYYY-MM-DD HH:mm:ss)
   const now = new Date();
   const offset = now.getTimezoneOffset() * 60000;
   const localIsoString = new Date(now.getTime() - offset).toISOString();
   const formattedTimestamp = localIsoString.replace('T', ' ').split('.')[0];
 
-  console.log('💾 DB 저장 시각:', formattedTimestamp);
-
   const result = await db.runAsync(
     'INSERT INTO entries (content, emotionCategoryIds, createdAt) VALUES (?, ?, ?);',
-    [content, jsonIds, formattedTimestamp] // 직접 생성한 시간을 넣습니다.
+    [content, jsonIds, formattedTimestamp]
   );
   return result.lastInsertRowId;
 };
 
+/**
+ * [UPDATE] 일기 수정
+ * 수정 시에는 기존의 createdAt(작성 시간)은 유지하고 내용과 감정 ID만 업데이트
+ */
+export const updateEntry = async (id: number, content: string, categoryIds: number[]) => {
+  const jsonIds = JSON.stringify(categoryIds);
+  
+  const result = await db.runAsync(
+    'UPDATE entries SET content = ?, emotionCategoryIds = ? WHERE id = ?;',
+    [content, jsonIds, id]
+  );
+  return result.changes; // 영향받은 행의 수 반환
+};
+
+/**
+ * [DELETE] 일기 삭제
+ */
+export const deleteEntry = async (id: number) => {
+  const result = await db.runAsync('DELETE FROM entries WHERE id = ?;', [id]);
+  return result.changes;
+};
+
+/**
+ * [READ] 모든 일기 조회
+ */
 export const getAllEntries = async (): Promise<JournalEntry[]> => {
   const rows = await db.getAllAsync('SELECT * FROM entries ORDER BY createdAt DESC;');
   
@@ -47,6 +69,9 @@ export const getAllEntries = async (): Promise<JournalEntry[]> => {
   }));
 };
 
+/**
+ * [READ] 특정 날짜의 일기 조회
+ */
 export const getEntriesByDate = async (dateStr: string): Promise<JournalEntry[]> => {
   const rows = await db.getAllAsync(
     "SELECT * FROM entries WHERE date(createdAt) = date(?) ORDER BY createdAt ASC;",
