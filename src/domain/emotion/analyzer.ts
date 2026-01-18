@@ -24,7 +24,7 @@ export const analyzeEmotion = (text: string): number[] => {
     return [];
   }
 
-  // 1. 카테고리별 빈도수 계산 (categoryId -> count)
+  // 카테고리별 빈도수 계산 (categoryId -> count)
   const counts: Record<number, number> = {};
 
   EMOTION_LEXICON.forEach((item: LexiconItem) => {
@@ -34,14 +34,14 @@ export const analyzeEmotion = (text: string): number[] => {
     }
   });
 
-  // 2. 결과가 없으면 빈 배열 반환
+  // 결과가 없으면 빈 배열 반환
   const categoryIds = Object.keys(counts).map(Number);
   if (categoryIds.length === 0) {
     console.log('3. 결과: 매칭된 감정 단어가 없습니다.');
     return [];
   }
 
-  // 3. 정렬 로직 적용
+  // 정렬 로직 적용
   // - 빈도수(counts) 내림차순
   // - 빈도수가 같으면 ID 오름차순
   const sortedIds = categoryIds.sort((a, b) => {
@@ -51,7 +51,7 @@ export const analyzeEmotion = (text: string): number[] => {
     return a - b;
   });
 
-  // 4. 상위 최대 2개만 반환
+  // 상위 최대 2개만 반환
   const result = sortedIds.slice(0, 2);
   console.log('4. 분석 최종 결과 (ID 리스트):', result);
   console.log('--- [분석기 종료] ---');

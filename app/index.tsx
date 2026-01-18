@@ -29,20 +29,20 @@ export default function HomeScreen() {
       setEntries(data);
 
       // --- [데이터 합산 로직] ---
-      // 1. 해당 날짜 모든 일기의 감정 ID를 하나의 배열로 합침
+      // 해당 날짜 모든 일기의 감정 ID를 하나의 배열로 합침
       const allIds = data.flatMap(entry => entry.emotionCategoryIds);
       
-      // 2. 빈도수 계산 (Counter)
+      // 빈도수 계산 (Counter)
       const counts: Record<number, number> = {};
       allIds.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
       
-      // 3. 빈도순 정렬 후 상위 2개 추출
+      // 빈도순 정렬 후 상위 2개 추출
       const topIds = Object.keys(counts)
         .map(Number)
         .sort((a, b) => counts[b] - counts[a])
         .slice(0, 2);
 
-      // 4. 대표 색상 및 그라데이션 위치 설정
+      // 대표 색상 및 그라데이션 위치 설정
       const display = getEmotionDisplay(topIds);
       setDayDisplay({
         colors: display.colors.length === 1 ? [display.colors[0], display.colors[0]] : display.colors,
