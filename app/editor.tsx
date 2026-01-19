@@ -9,87 +9,82 @@ import {
   Platform,
   Alert 
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router'; // [네비게이션 컨트롤러]
-import { analyzeEmotion } from '../src/domain/emotion/analyzer'; // [비즈니스 로직]
-import { saveEntry, updateEntry } from '../src/services/storage'; // [DB 서비스]
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import dayjs from 'dayjs'; // 날짜 처리를 위해 추가
+import { analyzeEmotion } from '../src/domain/emotion/analyzer';
+import { saveEntry, updateEntry } from '../src/services/storage';
 
 export default function EditorScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams(); // [파라미터 수신]
+  const params = useLocalSearchParams(); 
   const inputRef = useRef<TextInput>(null);
 
-  // 상태값 설정 (수정 모드일 경우 기존 내용을 초기값으로)
   const [content, setContent] = useState('');
   
-  // 수정 모드 판별 플래그
   const isEditing = !!params.id;
   const entryId = params.id ? Number(params.id) : null;
+  // [추가] 전달받은 선택된 날짜 (없으면 오늘)
+  const selectedDate = (params.selectedDate as string) || dayjs().format('YYYY-MM-DD');
 
   useEffect(() => {
-    // 수정 모드라면 전달받은 기존 내용을 세팅
     if (isEditing && params.content) {
       setContent(params.content as string);
     }
 
-    // 화면 진입 시 포커스
     const timer = setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
     return () => clearTimeout(timer);
   }, [isEditing, params.content]);
 
-  // [저장/수정 핸들러]
   const handleSave = async () => {
-    if (!content.trim()) return;
+  if (!content.trim()) return;
 
-    try {
-      // 감정 분석 실행
-      const categoryIds = analyzeEmotion(content);
+  try {
+    const categoryIds = analyzeEmotion(content);
 
-      if (isEditing && entryId) {
-        // (A) 수정 모드: UPDATE 실행
-        await updateEntry(entryId, content, categoryIds);
-        console.log(`✅ 수정 완료: ID ${entryId}`);
-      } else {
-        // (B) 생성 모드: INSERT 실행
-        await saveEntry(content, categoryIds);
-        console.log('✅ 새 일기 저장 완료');
-      }
-
-      // 메인화면으로 복귀
-      router.replace('/');
-    } catch (error) {
-      console.error('처리 중 에러 발생:', error);
-      Alert.alert("오류", "일기를 저장하는 중 문제가 발생했습니다.");
+    if (isEditing && entryId) {
+      // (A) 수정
+      await updateEntry(entryId, content, categoryIds);
+      console.log(`✅ 수정 완료: ID ${entryId}`);
+    } else {
+      // (B) 생성
+      await saveEntry(content, categoryIds, selectedDate);
+      console.log(`✅ 새 일기 저장 완료 (날짜: ${selectedDate})`);
     }
-  };
+
+    // 수정이든 생성이든, 완료 후에는 
+    // 현재 에디터가 보고 있던 '그 날짜'를 들고 메인으로 리턴
+    router.replace({
+      pathname: '/',
+      params: { selectedDate: selectedDate }
+    });
+
+  } catch (error) {
+    console.error('처리 중 에러 발생:', error);
+    Alert.alert("오류", "일기를 저장하는 중 문제가 발생했습니다.");
+  }
+};
 
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
       style={styles.container}
     >
-      {/* --- 상단 헤더 영역 --- */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => router.back()} 
-          style={styles.navButton}
-        >
+        <TouchableOpacity onPress={() => router.back()} style={styles.navButton}>
           <Text style={styles.cancelText}>취소</Text>
         </TouchableOpacity>
 
-        {/* 수정 모드일 때 헤더 타이틀 표시 (선택 사항) */}
-        <Text style={styles.headerTitle}>{isEditing ? '일기 수정' : '새 일기'}</Text>
+        <Text style={styles.headerTitle}>
+          {isEditing ? '일기 수정' : `${dayjs(selectedDate).format('MM월 DD일')} 일기`}
+        </Text>
 
-        <TouchableOpacity 
-          onPress={handleSave} 
-          style={styles.saveButton}
-        >
+        <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
           <Text style={styles.saveButtonText}>완료</Text>
         </TouchableOpacity>
       </View>
 
-      {/* --- 입력 영역 --- */}
       <TextInput
         ref={inputRef}
         style={styles.input}
