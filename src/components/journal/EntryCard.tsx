@@ -22,16 +22,16 @@ export default function EntryCard({ entry, onRefresh }: Props) {
   const handleEdit = () => {
     setMenuVisible(false);
 
-    // 1. entry.createdAt (예: "2026-01-18 14:30:00")에서 날짜만 잘라냅니다.
+    // entry.createdAt (예: "2026-01-18 14:30:00")에서 날짜만 잘라냄
     const entryDate = entry.createdAt.split(' ')[0];
 
-    // 2. 에디터 페이지로 이동하며 '날짜' 파라미터도 함께 전달합니다.
+    // 에디터 페이지로 이동하며 '날짜' 파라미터도 함께 전달
     router.push({
       pathname: '/editor',
       params: { 
         id: entry.id, 
         content: entry.content,
-        selectedDate: entryDate // 이 부분이 추가되어야 수정 후 제자리에 머뭅니다.
+        selectedDate: entryDate // 수정 후 제자리
       }
   });
 };
