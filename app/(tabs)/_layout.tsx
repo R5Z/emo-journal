@@ -2,9 +2,11 @@ import React from 'react';
 import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity, View, StyleSheet, Platform } from 'react-native';
+import { useDateStore } from '../../src/store/useDateStore'; // 경로 확인 필수!
 
 export default function TabLayout() {
   const router = useRouter();
+  const { selectedDate } = useDateStore(); // 전역 날짜 구독
 
   return (
     <Tabs
@@ -12,8 +14,11 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#007AFF',
         tabBarInactiveTintColor: '#8E8E93',
         tabBarStyle: {
-          height: Platform.OS === 'ios' ? 90 : 70, // 하단 바 높이 확보
+          height: Platform.OS === 'ios' ? 90 : 70,
           paddingBottom: Platform.OS === 'ios' ? 30 : 10,
+          backgroundColor: '#fff',
+          borderTopWidth: 1,
+          borderTopColor: '#F2F2F7',
         },
       }}
     >
@@ -26,16 +31,21 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 중앙 + 버튼: 화면은 없지만 탭 자리를 차지함 */}
       <Tabs.Screen
-        name="write_dummy"
+        name="write_dummy" // 실제 파일이 없어도 탭 공간 확보용
         options={{
           title: '',
           tabBarButton: () => (
             <View style={styles.centerButtonContainer}>
               <TouchableOpacity
                 style={styles.centerButton}
-                onPress={() => router.push('/editor')}
+                onPress={() => {
+                  // 스토어에 저장된 날짜를 그대로 에디터에 넘김
+                  router.push({
+                    pathname: '/editor',
+                    params: { selectedDate: selectedDate }
+                  });
+                }}
               >
                 <Ionicons name="add" size={32} color="white" />
               </TouchableOpacity>
@@ -63,17 +73,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   centerButton: {
-    top: -10, // 탭 바 위로 살짝 띄움
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    top: Platform.OS === 'ios' ? -5 : 0, 
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    elevation: 8,
   },
 });

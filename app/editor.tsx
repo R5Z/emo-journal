@@ -10,7 +10,7 @@ import {
   Alert 
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import dayjs from 'dayjs'; // 날짜 처리를 위해 추가
+import dayjs from 'dayjs';
 import { analyzeEmotion } from '../src/domain/emotion/analyzer';
 import { saveEntry, updateEntry } from '../src/services/storage';
 
@@ -23,7 +23,8 @@ export default function EditorScreen() {
   
   const isEditing = !!params.id;
   const entryId = params.id ? Number(params.id) : null;
-  // [추가] 전달받은 선택된 날짜 (없으면 오늘)
+  
+  // [수정] params로 넘어온 날짜를 우선 사용
   const selectedDate = (params.selectedDate as string) || dayjs().format('YYYY-MM-DD');
 
   useEffect(() => {
@@ -38,33 +39,28 @@ export default function EditorScreen() {
   }, [isEditing, params.content]);
 
   const handleSave = async () => {
-  if (!content.trim()) return;
+    if (!content.trim()) return;
 
-  try {
-    const categoryIds = analyzeEmotion(content);
+    try {
+      const categoryIds = analyzeEmotion(content);
 
-    if (isEditing && entryId) {
-      // (A) 수정
-      await updateEntry(entryId, content, categoryIds);
-      console.log(`✅ 수정 완료: ID ${entryId}`);
-    } else {
-      // (B) 생성
-      await saveEntry(content, categoryIds, selectedDate);
-      console.log(`✅ 새 일기 저장 완료 (날짜: ${selectedDate})`);
+      if (isEditing && entryId) {
+        await updateEntry(entryId, content, categoryIds);
+      } else {
+        // [확인] 선택된 과거 날짜로 저장
+        await saveEntry(content, categoryIds, selectedDate);
+      }
+
+      router.replace({
+        pathname: '/',
+        params: { selectedDate: selectedDate }
+      });
+
+    } catch (error) {
+      console.error('처리 중 에러 발생:', error);
+      Alert.alert("오류", "일기를 저장하는 중 문제가 발생했습니다.");
     }
-
-    // 수정이든 생성이든, 완료 후에는 
-    // 현재 에디터가 보고 있던 '그 날짜'를 들고 메인으로 리턴
-    router.replace({
-      pathname: '/',
-      params: { selectedDate: selectedDate }
-    });
-
-  } catch (error) {
-    console.error('처리 중 에러 발생:', error);
-    Alert.alert("오류", "일기를 저장하는 중 문제가 발생했습니다.");
-  }
-};
+  };
 
   return (
     <KeyboardAvoidingView 
