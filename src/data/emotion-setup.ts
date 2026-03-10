@@ -12,5 +12,13 @@ export const EMOTION_CATEGORIES: EmotionCategory[] = [
   { categoryId: 9, name: "불안", role: "core", colorHex: "#9D84B7" },
   { categoryId: 10, name: "우울", role: "core", colorHex: "#6B7C93" },
   { categoryId: 11, name: "슬픔", role: "core", colorHex: "#4D96FF" },
-  // ... 총 20개 카테고리
+  { categoryId: 12, name: "무기력", role: "core", colorHex: "#95A5A6" },
+  { categoryId: 13, name: "외로움", role: "core", colorHex: "#6C7A89" },
+  { categoryId: 14, name: "짜증", role: "core", colorHex: "#E74C3C" },
+  { categoryId: 15, name: "분노", role: "core", colorHex: "#C0392B" },
+  { categoryId: 16, name: "좌절", role: "core", colorHex: "#D35400" },
+  { categoryId: 17, name: "후회", role: "core", colorHex: "#8B6F47" },
+  { categoryId: 18, name: "놀람", role: "reactive", colorHex: "#F39C12" },
+  { categoryId: 19, name: "당황", role: "reactive", colorHex: "#E67E22" },
+  { categoryId: 20, name: "황당/충격", role: "reactive", colorHex: "#9B59B6" }
 ];
