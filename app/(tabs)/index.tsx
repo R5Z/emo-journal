@@ -144,6 +144,11 @@ export default function HomeScreen() {
           </View>
         ) : (
           <View style={styles.monthContainer}>
+            <View style={styles.weekdayHeader}>
+             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+              <Text key={d} style={styles.weekdayLabel}>{d}</Text>
+             ))}
+            </View>
             <View style={styles.monthGrid}>
               {calendarGrid.map((date) => {
                 const dateStr = date.format('YYYY-MM-DD');
@@ -202,6 +207,8 @@ const styles = StyleSheet.create({
   dateText: { fontSize: 16, fontWeight: '600' },
   selectedDayText: { color: '#fff' },
   monthContainer: { paddingHorizontal: 15, paddingBottom: 15 },
+  weekdayHeader: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 4 },
+  weekdayLabel: { width: `${100 / 7}%`, textAlign: 'center', fontSize: 11, color: '#8E8E93', fontWeight: '500' },
   monthGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   gridCell: { width: `${100 / 7}%`, height: 45, padding: 2 },
   gridInner: { flex: 1, justifyContent: 'center', alignItems: 'center', borderRadius: 8 },
