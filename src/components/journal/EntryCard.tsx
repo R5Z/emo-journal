@@ -13,7 +13,7 @@ interface Props {
 
 export default function EntryCard({ entry, onRefresh }: Props) {
   const [menuVisible, setMenuVisible] = useState(false);
-  const { colors } = getEmotionDisplay(entry.emotionCategoryIds);
+  const { colors } = getEmotionDisplay(entry.emotionResult);
   const router = useRouter();
   
   // 시간 추출 (YYYY-MM-DD HH:mm:ss -> HH:mm)

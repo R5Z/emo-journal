@@ -47,36 +47,71 @@ export default function HomeScreen() {
   }, [selectedDate]);
 
   const loadData = useCallback(async () => {
-    try {
-      await initDB();
-      const startDate = isExpended ? calendarGrid[0].format('YYYY-MM-DD') : weekDays[0].format('YYYY-MM-DD');
-      const endDate = isExpended ? calendarGrid[calendarGrid.length - 1].format('YYYY-MM-DD') : weekDays[6].format('YYYY-MM-DD');
-      const rangeEntries = await getEntriesByRange(startDate, endDate);
-      const groupedIds: Record<string, number[]> = {};
-      rangeEntries.forEach(entry => {
-        const date = entry.createdAt.split(' ')[0];
-        if (!groupedIds[date]) groupedIds[date] = [];
-        groupedIds[date].push(...entry.emotionCategoryIds);
+  try {
+    await initDB();
+    const startDate = isExpended
+      ? calendarGrid[0].format('YYYY-MM-DD')
+      : weekDays[0].format('YYYY-MM-DD');
+    const endDate = isExpended
+      ? calendarGrid[calendarGrid.length - 1].format('YYYY-MM-DD')
+      : weekDays[6].format('YYYY-MM-DD');
+
+    const rangeEntries = await getEntriesByRange(startDate, endDate);
+
+    // 날짜별 감정 점수 집계
+    // 같은 날에 여러 일기가 있으면 카테고리별 점수를 합산
+    const groupedScores: Record<string, Record<number, { total: number; count: number }>> = {};
+
+    rangeEntries.forEach((entry) => {
+      const date = entry.createdAt.split(' ')[0];
+      if (!groupedScores[date]) groupedScores[date] = {};
+
+      entry.emotionResult.topCategories.forEach((cat) => {
+        if (!groupedScores[date][cat.categoryId]) {
+          groupedScores[date][cat.categoryId] = { total: 0, count: 0 };
+        }
+        groupedScores[date][cat.categoryId].total += cat.totalScore;
+        groupedScores[date][cat.categoryId].count += cat.matchCount;
       });
-      const newMap: Record<string, any> = {};
-      Object.keys(groupedIds).forEach(date => {
-        const ids = groupedIds[date];
-        const counts: Record<number, number> = {};
-        ids.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
-        const topIds = Object.keys(counts).map(Number).sort((a,b) => counts[b] - counts[a]).slice(0, 2);
-        const display = getEmotionDisplay(topIds);
-        newMap[date] = {
-          colors: display.colors.length === 1 ? [display.colors[0], display.colors[0]] : display.colors,
-          stops: display.colors.length === 1 ? [0, 1] : display.stops
-        };
+    });
+
+    // 날짜별 AnalysisResult를 구성하여 formatter에 전달
+    const newMap: Record<string, any> = {};
+
+    Object.keys(groupedScores).forEach((date) => {
+      const scoreEntries = Object.entries(groupedScores[date])
+        .map(([id, { total, count }]) => ({
+          categoryId: Number(id),
+          totalScore: total,
+          matchCount: count,
+        }))
+        .sort((a, b) => b.totalScore - a.totalScore);
+
+      const display = getEmotionDisplay({
+        topCategories: scoreEntries.slice(0, 3),
+        isNeutral: scoreEntries.length === 0,
       });
-      setEmotionMap(newMap);
-      const data = await getEntriesByDate(selectedDate);
-      setEntries(data);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [selectedDate, isExpended, calendarGrid, weekDays]);
+
+      newMap[date] = {
+        colors:
+          display.colors.length === 1
+            ? [display.colors[0], display.colors[0]]
+            : display.colors,
+        stops:
+          display.colors.length === 1
+            ? [0, 1]
+            : display.stops,
+      };
+    });
+
+    setEmotionMap(newMap);
+
+    const data = await getEntriesByDate(selectedDate);
+    setEntries(data);
+  } catch (e) {
+    console.error(e);
+  }
+}, [selectedDate, isExpended, calendarGrid, weekDays]);
 
   useEffect(() => { if (isFocused) loadData(); }, [isFocused, loadData]);
 
