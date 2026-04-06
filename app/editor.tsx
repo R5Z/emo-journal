@@ -39,28 +39,21 @@ export default function EditorScreen() {
   }, [isEditing, params.content]);
 
   const handleSave = async () => {
-    if (!content.trim()) return;
-
-    try {
-      const categoryIds = analyzeEmotion(content);
-
-      if (isEditing && entryId) {
-        await updateEntry(entryId, content, categoryIds);
-      } else {
-        // [확인] 선택된 과거 날짜로 저장
-        await saveEntry(content, categoryIds, selectedDate);
-      }
-
-      router.replace({
-        pathname: '/',
-        params: { selectedDate: selectedDate }
-      });
-
-    } catch (error) {
-      console.error('처리 중 에러 발생:', error);
-      Alert.alert("오류", "일기를 저장하는 중 문제가 발생했습니다.");
+  if (!content.trim()) return;
+  try {
+    const result = analyzeEmotion(content);
+    console.log('분석 결과:', JSON.stringify(result, null, 2)); // 분석 로그
+    if (isEditing && entryId) {
+      await updateEntry(entryId, content, result);
+    } else {
+      await saveEntry(content, result, selectedDate);
     }
-  };
+    router.replace({ pathname: '/', params: { selectedDate } });
+  } catch (error) {
+    console.error('처리 중 에러 발생:', error);
+    Alert.alert("오류", "일기를 저장하는 중 문제가 발생했습니다.");
+  }
+};
 
   return (
     <KeyboardAvoidingView 

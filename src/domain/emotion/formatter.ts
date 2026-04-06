@@ -1,36 +1,66 @@
 import { EMOTION_CATEGORIES } from '../../data/emotion-setup';
-import { EmotionDisplay } from '../../types';
+import { PIPELINE_CONFIG } from '../../data/config';
+import { AnalysisResult, EmotionDisplay } from '../../types';
 
 /**
- * 감정 ID 리스트를 받아 UI에서 사용할 색상 객체를 반환
- * 규칙:
- * - 1개일 때: 단색(Solid)
- * - 2개일 때: 6:4 비율의 그라데이션
+ * 분석 결과를 UI 색상 객체로 변환
+ *
+ * - 중립: #E0E0E0 단색
+ * - 1개 감정: 해당 색상 단색
+ * - 2~3개 감정: 점수 비율 기반 그라데이션
  */
-export const getEmotionDisplay = (categoryIds: number[]): EmotionDisplay => {
-  // 각 ID에 해당하는 colorHex 찾기
-  const colors = categoryIds
-    .map(id => EMOTION_CATEGORIES.find(c => c.categoryId === id)?.colorHex)
-    .filter((color): color is string => !!color);
+export const getEmotionDisplay = (result: AnalysisResult): EmotionDisplay => {
+  const { NEUTRAL_COLOR } = PIPELINE_CONFIG;
 
-  // 데이터가 없을 경우 기본 회색 반환
-  if (colors.length === 0) {
-    return { type: 'solid', colors: ['#EEEEEE'], stops: [1.0] };
-  }
-
-  // 2개일 경우 그라데이션 (주 감정 0.6, 부 감정 1.0)
-  if (colors.length === 2) {
+  // 중립 상태
+  if (result.isNeutral || result.topCategories.length === 0) {
     return {
-      type: 'gradient',
-      colors: colors, // [첫 번째 색, 두 번째 색]
-      stops: [0.6, 1.0] 
+      type: 'neutral',
+      colors: [NEUTRAL_COLOR],
+      stops: [1.0],
     };
   }
 
-  // 1개일 경우 단색
+  // 카테고리 ID → colorHex 매핑
+  const colorEntries = result.topCategories
+    .map((cat) => ({
+      color: EMOTION_CATEGORIES.find((c) => c.categoryId === cat.categoryId)?.colorHex,
+      score: cat.totalScore,
+    }))
+    .filter((entry): entry is { color: string; score: number } => !!entry.color);
+
+  if (colorEntries.length === 0) {
+    return {
+      type: 'neutral',
+      colors: [NEUTRAL_COLOR],
+      stops: [1.0],
+    };
+  }
+
+  // 단색
+  if (colorEntries.length === 1) {
+    return {
+      type: 'solid',
+      colors: [colorEntries[0].color],
+      stops: [1.0],
+    };
+  }
+
+  // 2~3색 그라데이션: 점수 비율로 stops 계산
+  const totalScore = colorEntries.reduce((sum, e) => sum + e.score, 0);
+  const colors = colorEntries.map((e) => e.color);
+
+  // 누적 stops 계산 (LinearGradient locations용)
+  // 예: 점수 4:3:3 → 비율 0.4, 0.3, 0.3 → stops [0.4, 0.7, 1.0]
+  let cumulative = 0;
+  const stops = colorEntries.map((e) => {
+    cumulative += e.score / totalScore;
+    return Math.round(cumulative * 100) / 100;
+  });
+
   return {
-    type: 'solid',
-    colors: [colors[0]],
-    stops: [1.0]
+    type: 'gradient',
+    colors,
+    stops,
   };
 };

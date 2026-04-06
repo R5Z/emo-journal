@@ -1,60 +1,294 @@
 import { EMOTION_LEXICON } from '../../data/lexicon';
-import { LexiconItem } from '../../types';
+import { MODIFIERS } from '../../data/modifiers';
+import { NEGATIONS } from '../../data/negations';
+import { PIPELINE_CONFIG } from '../../data/config';
+import {
+  LexiconItem,
+  RawMatch,
+  ProcessedMatch,
+  CategoryScore,
+  AnalysisResult,
+} from '../../types';
 
-/**
- * 사용자의 일기 텍스트를 분석하여 매칭된 감정 카테고리 ID들을 반환
- * 규칙:
- * 1. 많이 언급된 순으로 최대 2개 추출
- * 2. 언급 횟수가 같으면 카테고리 ID가 낮은 순(오름차순)으로 정렬
- */
-export const analyzeEmotion = (text: string): number[] => {
-  console.log('--- [분석기 동작 시작] ---');
-  console.log('1. 입력 텍스트:', text);
-  
-  // 사전 데이터 로드 확인 (가장 먼저 체크해야 할 부분)
-  if (!EMOTION_LEXICON || EMOTION_LEXICON.length === 0) {
-    console.error('❌ 에러: EMOTION_LEXICON 데이터가 비어있거나 경로가 잘못되었습니다.');
-    return [];
-  }
-  
-  console.log(`2. 현재 로드된 사전 단어 수: ${EMOTION_LEXICON.length}개`);
+// ============================================
+// 유틸: 텍스트를 어절(공백 구분) 배열로 분리
+// ============================================
+const tokenize = (text: string): string[] => text.split(/\s+/).filter(Boolean);
 
-  if (!text.trim()) {
-    console.log('입력값이 비어있습니다.');
-    return [];
-  }
+// ============================================
+// 유틸: 매칭 위치 주변 N어절 텍스트 추출
+// ============================================
+const getSurroundingText = (
+  text: string,
+  position: number,
+  phraseLength: number,
+  direction: 'before' | 'after' | 'both',
+  rangeInWords: number,
+): string => {
+  const before = text.slice(0, position);
+  const after = text.slice(position + phraseLength);
 
-  // 카테고리별 빈도수 계산 (categoryId -> count)
-  const counts: Record<number, number> = {};
+  const wordsBefore = tokenize(before).slice(-rangeInWords).join(' ');
+  const wordsAfter = tokenize(after).slice(0, rangeInWords).join(' ');
+
+  if (direction === 'before') return wordsBefore;
+  if (direction === 'after') return wordsAfter;
+  return `${wordsBefore} ${wordsAfter}`;
+};
+
+// ============================================
+// STEP 1: 키워드 매칭
+// ============================================
+const matchKeywords = (text: string): RawMatch[] => {
+  const matches: RawMatch[] = [];
+  const tokens = tokenize(text);
 
   EMOTION_LEXICON.forEach((item: LexiconItem) => {
-    if (text.includes(item.phrase)) {
-      console.log(`✨ 매칭 성공: [${item.phrase}] -> 카테고리 ${item.categoryId}`);
-      counts[item.categoryId] = (counts[item.categoryId] || 0) + 1;
+    switch (item.matchType) {
+      case 'contains':
+      case 'phrase': {
+        let searchFrom = 0;
+        while (true) {
+          const idx = text.indexOf(item.phrase, searchFrom);
+          if (idx === -1) break;
+          matches.push({
+            phrase: item.phrase,
+            categoryId: item.categoryId,
+            baseIntensity: item.intensity,
+            matchType: item.matchType,
+            position: idx,
+          });
+          searchFrom = idx + item.phrase.length;
+        }
+        break;
+      }
+
+      case 'exact': {
+        tokens.forEach((token, i) => {
+          if (token === item.phrase) {
+            const position = text.indexOf(token);
+            matches.push({
+              phrase: item.phrase,
+              categoryId: item.categoryId,
+              baseIntensity: item.intensity,
+              matchType: item.matchType,
+              position: position >= 0 ? position : 0,
+            });
+          }
+        });
+        break;
+      }
+
+      case 'startsWith': {
+        tokens.forEach((token) => {
+          if (token.startsWith(item.phrase)) {
+            const position = text.indexOf(token);
+            matches.push({
+              phrase: item.phrase,
+              categoryId: item.categoryId,
+              baseIntensity: item.intensity,
+              matchType: item.matchType,
+              position: position >= 0 ? position : 0,
+            });
+          }
+        });
+        break;
+      }
     }
   });
 
-  // 결과가 없으면 빈 배열 반환
-  const categoryIds = Object.keys(counts).map(Number);
-  if (categoryIds.length === 0) {
-    console.log('3. 결과: 매칭된 감정 단어가 없습니다.');
-    return [];
+  return matches;
+};
+
+// ============================================
+// STEP 1.5: phrase 우선순위 처리
+// 같은 텍스트 영역에서 phrase와 contains가 겹치면
+// phrase가 우선하고 contains를 무효화
+// ============================================
+const applyPhrasePriority = (matches: RawMatch[]): RawMatch[] => {
+  const phraseRanges = matches
+    .filter((m) => m.matchType === 'phrase')
+    .map((m) => ({
+      start: m.position,
+      end: m.position + m.phrase.length,
+    }));
+
+  if (phraseRanges.length === 0) return matches;
+
+  return matches.filter((m) => {
+    if (m.matchType === 'phrase' || m.matchType === 'exact' || m.matchType === 'startsWith') {
+      return true;
+    }
+    // contains 매칭이 phrase 범위 안에 포함되는지 확인
+    const matchEnd = m.position + m.phrase.length;
+    const overlaps = phraseRanges.some(
+      (range) => m.position >= range.start && matchEnd <= range.end,
+    );
+    return !overlaps;
+  });
+};
+
+// ============================================
+// STEP 2: 부정 표현 필터
+// ============================================
+const applyNegationFilter = (
+  text: string,
+  matches: RawMatch[],
+): ProcessedMatch[] => {
+  return matches.map((match) => {
+    let negated = false;
+
+    for (const neg of NEGATIONS) {
+      const surrounding = getSurroundingText(
+        text,
+        match.position,
+        match.phrase.length,
+        neg.scanDirection,
+        neg.scanRange,
+      );
+
+      if (surrounding.includes(neg.word)) {
+        negated = true;
+        break;
+      }
+    }
+
+    return {
+      ...match,
+      negated,
+      finalIntensity: match.baseIntensity,
+    };
+  });
+};
+
+// ============================================
+// STEP 3: 수식어 강도 보정
+// ============================================
+const applyModifierAdjustment = (
+  text: string,
+  matches: ProcessedMatch[],
+): ProcessedMatch[] => {
+  const { MIN_INTENSITY, MAX_INTENSITY, MODIFIER_SCAN_RANGE } = PIPELINE_CONFIG;
+
+  return matches.map((match) => {
+    if (match.negated) return match;
+
+    const beforeText = getSurroundingText(
+      text,
+      match.position,
+      match.phrase.length,
+      'before',
+      MODIFIER_SCAN_RANGE,
+    );
+
+    let delta = 0;
+    for (const mod of MODIFIERS) {
+      if (beforeText.includes(mod.word)) {
+        delta = mod.delta;
+        break; // 첫 번째 수식어만 적용
+      }
+    }
+
+    const adjusted = Math.max(
+      MIN_INTENSITY,
+      Math.min(MAX_INTENSITY, match.baseIntensity + delta),
+    );
+
+    return { ...match, finalIntensity: adjusted };
+  });
+};
+
+// ============================================
+// STEP 4: 카테고리별 점수 합산
+// ============================================
+const aggregateScores = (matches: ProcessedMatch[]): CategoryScore[] => {
+  const scoreMap: Record<number, { total: number; count: number }> = {};
+
+  matches.forEach((match) => {
+    if (match.negated) return;
+
+    if (!scoreMap[match.categoryId]) {
+      scoreMap[match.categoryId] = { total: 0, count: 0 };
+    }
+    scoreMap[match.categoryId].total += match.finalIntensity;
+    scoreMap[match.categoryId].count += 1;
+  });
+
+  return Object.entries(scoreMap)
+    .map(([id, { total, count }]) => ({
+      categoryId: Number(id),
+      totalScore: total,
+      matchCount: count,
+    }))
+    .sort((a, b) => {
+      if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+      return a.categoryId - b.categoryId;
+    });
+};
+
+// ============================================
+// STEP 5: 상위 카테고리 선택 (동적 1~3개)
+// ============================================
+const selectTopCategories = (scores: CategoryScore[]): CategoryScore[] => {
+  const { MAX_GRADIENT_COLORS, THIRD_COLOR_RATIO } = PIPELINE_CONFIG;
+
+  if (scores.length === 0) return [];
+  if (scores.length === 1) return [scores[0]];
+
+  const top2 = scores.slice(0, 2);
+
+  // 3위가 존재하고, 1위 점수의 THIRD_COLOR_RATIO 이상이면 포함
+  if (
+    scores.length >= 3 &&
+    MAX_GRADIENT_COLORS >= 3 &&
+    scores[2].totalScore >= scores[0].totalScore * THIRD_COLOR_RATIO
+  ) {
+    return scores.slice(0, 3);
   }
 
-  // 정렬 로직 적용
-  // - 빈도수(counts) 내림차순
-  // - 빈도수가 같으면 ID 오름차순
-  const sortedIds = categoryIds.sort((a, b) => {
-    if (counts[b] !== counts[a]) {
-      return counts[b] - counts[a];
-    }
-    return a - b;
-  });
+  return top2;
+};
 
-  // 상위 최대 2개만 반환
-  const result = sortedIds.slice(0, 2);
-  console.log('4. 분석 최종 결과 (ID 리스트):', result);
-  console.log('--- [분석기 종료] ---');
-  
-  return result;
+// ============================================
+// 메인 분석 함수
+// ============================================
+export const analyzeEmotion = (text: string): AnalysisResult => {
+  const { NEUTRAL_THRESHOLD } = PIPELINE_CONFIG;
+
+  if (!text.trim()) {
+    return { topCategories: [], isNeutral: true };
+  }
+
+  if (!EMOTION_LEXICON || EMOTION_LEXICON.length === 0) {
+    console.error('EMOTION_LEXICON이 비어있습니다.');
+    return { topCategories: [], isNeutral: true };
+  }
+
+  // STEP 1: 키워드 매칭
+  const rawMatches = matchKeywords(text);
+
+  // STEP 1.5: phrase 우선순위
+  const prioritized = applyPhrasePriority(rawMatches);
+
+  // STEP 2: 부정 필터
+  const negationFiltered = applyNegationFilter(text, prioritized);
+
+  // STEP 3: 수식어 보정
+  const modifierAdjusted = applyModifierAdjustment(text, negationFiltered);
+
+  // 유효 매칭 수 (부정되지 않은 것만)
+  const validMatches = modifierAdjusted.filter((m) => !m.negated);
+  const isNeutral = validMatches.length <= NEUTRAL_THRESHOLD;
+
+  // STEP 4: 합산
+  const scores = aggregateScores(modifierAdjusted);
+
+  // STEP 5: 상위 선택
+  const topCategories = selectTopCategories(scores);
+
+  return {
+    topCategories,
+    isNeutral,
+    allMatches: __DEV__ ? modifierAdjusted : undefined,
+  };
 };
