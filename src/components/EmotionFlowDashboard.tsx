@@ -54,6 +54,15 @@ const categoryMap = new Map(
 const getColor = (id: number) => categoryMap.get(id)?.colorHex || NEUTRAL_COLOR;
 const getName = (id: number) => categoryMap.get(id)?.name || '중립';
 
+const SHORT_NAMES: Record<number, string> = {
+  3:  '설렘',
+  4:  '평온',
+  6:  '스트레스',
+  8:  '걱정',
+  21: '황당',
+};
+const getShortName = (id: number) => SHORT_NAMES[id] || getName(id);
+
 const MONTH_NAMES = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
@@ -235,7 +244,7 @@ function DotRow({
   dailyEmotions: DailyEmotion[];
 }) {
   const color = getColor(categoryId);
-  const name = getName(categoryId);
+  const name = getShortName(categoryId);
 
   return (
     <View style={s.dotRow}>
@@ -464,7 +473,7 @@ const s = StyleSheet.create({
     fontSize: 11,
     color: '#8E8E93',
     marginLeft: 8,
-    minWidth: 50,
+    minWidth: 45,
     textAlign: 'right',
   },
 

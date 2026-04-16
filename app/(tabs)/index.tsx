@@ -214,7 +214,7 @@ export default function HomeScreen() {
         {entries.length === 0 ? (
           <View style={styles.emptyContainer}>
             <View style={styles.aiBubble}><Text style={styles.aiText}>{selectedDate === dayjs().format('YYYY-MM-DD') ? "오늘 무슨 일 있었어?\n네 마음이 궁금해." : "이날은 기록이 없네.\n어떤 하루였는지 들려줄래?"}</Text></View>
-            <TouchableOpacity style={styles.inputGuide} onPress={goToEditor}><Text style={styles.guideText}>터치해서 일기 쓰기...</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.inputGuide} onPress={goToEditor}><Text style={styles.guideText}>터치해서 기록하기...</Text></TouchableOpacity>
           </View>
         ) : (
           entries.map(entry => <EntryCard key={entry.id} entry={entry} onRefresh={loadData} />)
