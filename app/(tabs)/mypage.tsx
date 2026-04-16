@@ -6,11 +6,18 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getAllEntries } from '../../src/services/storage';
 import EmotionFlowDashboard from '../../src/components/EmotionFlowDashboard';
+import ProfileEditModal, {
+  Profile,
+  DEFAULT_PROFILE,
+  loadProfile,
+  saveProfile,
+} from '../../src/components/ProfileEditModal';
 
 // ============================================
 // 스트릭 계산
@@ -91,6 +98,9 @@ export default function ProfileScreen() {
   });
   const [joinDate, setJoinDate] = useState('');
   const [entries, setEntries] = useState<any[]>([]);
+  const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+
 
   useFocusEffect(
     useCallback(() => {
@@ -100,9 +110,14 @@ export default function ProfileScreen() {
 
   const loadData = async () => {
     try {
-      const allEntries = await getAllEntries();
-      setStats(calculateStreaks(allEntries));
+      const [allEntries, savedProfile] = await Promise.all([
+        getAllEntries(),
+        loadProfile(),
+      ]);
+
       setEntries(allEntries);
+      setStats(calculateStreaks(allEntries));
+      setProfile(savedProfile);
 
       if (allEntries.length > 0) {
         const dates = allEntries
@@ -110,10 +125,17 @@ export default function ProfileScreen() {
           .sort();
         const [y, m, d] = dates[0].split('-');
         setJoinDate(`${y}.${m}.${d} 첫 기록`);
+      } else {
+        setJoinDate('');
       }
     } catch (error) {
       console.error('Failed to load profile data:', error);
     }
+  };
+
+  const handleSaveProfile = async (newProfile: Profile) => {
+    await saveProfile(newProfile);
+    setProfile(newProfile);
   };
 
   return (
@@ -142,16 +164,26 @@ export default function ProfileScreen() {
         {/* ── Profile Card ── */}
         <View style={styles.card}>
           <View style={styles.profileRow}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarEmoji}>🪨</Text>
-            </View>
+            {profile.avatarType === 'image' && profile.avatarImageUri ? (
+              <Image
+                source={{ uri: profile.avatarImageUri }}
+                style={{ width: 60, height: 60, borderRadius: 30 }}
+              />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarEmoji}>{profile.avatarEmoji}</Text>
+              </View>
+            )}
             <View style={styles.profileInfo}>
-              <Text style={styles.nickname}>송은석</Text>
+              <Text style={styles.nickname}>{profile.nickname}</Text>
               {joinDate !== '' && (
                 <Text style={styles.joinDate}>{joinDate}</Text>
               )}
             </View>
-            <TouchableOpacity style={styles.editButton}>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => setEditModalVisible(true)}
+            >
               <Text style={styles.editButtonText}>편집</Text>
             </TouchableOpacity>
           </View>
@@ -176,6 +208,14 @@ export default function ProfileScreen() {
         {/* ── 감정 흐름 + 카테고리 범례 ── */}
         <EmotionFlowDashboard entries={entries} />
       </ScrollView>
+
+      {/* ── 프로필 편집 모달 ── */}
+      <ProfileEditModal
+        visible={editModalVisible}
+        initialProfile={profile}
+        onSave={handleSaveProfile}
+        onClose={() => setEditModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
