@@ -20,6 +20,8 @@ import {
   scheduleDailyReminder,
   cancelDailyReminder,
 } from '../src/lib/notifications';
+import PinSetupModal from '../src/components/PinSetupModal';
+import { savePin, hasPinSet, removePin, getBiometricType } from '../src/lib/appLock';
 
 // ============================================
 // 설정값 저장/로드
@@ -308,6 +310,10 @@ export default function SettingsScreen() {
   const [fontSizeModalVisible, setFontSizeModalVisible] = useState(false);
   const [weekStartModalVisible, setWeekStartModalVisible] = useState(false);
 
+  const [pinModalVisible, setPinModalVisible] = useState(false);
+  const [pinIsChange, setPinIsChange] = useState(false);
+  const [biometricLabel, setBiometricLabel] = useState('Face ID');
+
   useEffect(() => {
   loadSettings().then((s) => {
     setSettings(s);
@@ -318,6 +324,9 @@ export default function SettingsScreen() {
       scheduleDailyReminder(s.remindHour, s.remindMinute, s.remindMessage);
     }
   });
+
+  // 생체인증 타입 확인
+  getBiometricType().then(setBiometricLabel);
 }, []);
 
   const update = <K extends keyof Settings>(key: K, value: Settings[K]) => {
@@ -466,16 +475,30 @@ export default function SettingsScreen() {
         <Group>
           <Row
             label="앱 잠금"
-            sub={settings.appLock ? 'Face ID로 잠금 중' : '잠금 해제됨'}
+            sub={settings.appLock ? `${biometricLabel}로 잠금 중` : '잠금 해제됨'}
             right={
               <Switch
                 value={settings.appLock}
-                onValueChange={(v) => update('appLock', v)}
+                onValueChange={async (v) => {
+                  if (v) {
+                    // 잠금 켤 때 PIN 설정 필수
+                    const pinExists = await hasPinSet();
+                    if (!pinExists) {
+                      setPinIsChange(false);
+                      setPinModalVisible(true);
+                      return; // PIN 설정 완료 후에 토글 켜짐
+                    }
+                  }
+                  update('appLock', v);
+                }}
                 trackColor={{ false: '#E5E5EA', true: '#34C759' }}
               />
             }
           />
-          <Row label="PIN 변경" onPress={() => {}} />
+          <Row label="PIN 변경" onPress={() => {
+            setPinIsChange(true);
+            setPinModalVisible(true);
+          }} />
           <Row
             label="자동 잠금 시간"
             right={
@@ -698,6 +721,20 @@ export default function SettingsScreen() {
         selected={settings.weekStart}
         onSelect={(v) => update('weekStart', v)}
         onClose={() => setWeekStartModalVisible(false)}
+      />
+
+      <PinSetupModal
+        visible={pinModalVisible}
+        isChange={pinIsChange}
+        onComplete={async (pin) => {
+          await savePin(pin);
+          setPinModalVisible(false);
+          if (!settings.appLock) {
+            update('appLock', true);
+          }
+          Alert.alert('완료', 'PIN이 설정되었습니다.');
+        }}
+        onClose={() => setPinModalVisible(false)}
       />
     </SafeAreaView>
   );
