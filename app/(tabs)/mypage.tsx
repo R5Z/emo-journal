@@ -10,7 +10,7 @@ import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { getAllEntries } from '../../src/services/storage';
+import { getAllEntries } from '../../src/lib/storage';
 import EmotionFlowDashboard from '../../src/components/EmotionFlowDashboard';
 import ProfileEditModal, {
   Profile,
@@ -18,72 +18,8 @@ import ProfileEditModal, {
   loadProfile,
   saveProfile,
 } from '../../src/components/ProfileEditModal';
+import { calculateStreaks, getFirstRecordDate, StreakStats } from '../../src/lib/streak';
 
-// ============================================
-// 스트릭 계산
-// ============================================
-
-type StreakStats = {
-  current: number;
-  longest: number;
-  total: number;
-};
-
-const toLocalDateStr = (d: Date): string => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-};
-
-const dayDiff = (a: string, b: string): number => {
-  const msA = new Date(a + 'T00:00:00').getTime();
-  const msB = new Date(b + 'T00:00:00').getTime();
-  return Math.round((msB - msA) / 86_400_000);
-};
-
-function calculateStreaks(
-  entries: { createdAt: string }[],
-): StreakStats {
-  if (entries.length === 0) {
-    return { current: 0, longest: 0, total: 0 };
-  }
-
-  const dates = [
-    ...new Set(entries.map((e) => e.createdAt.split(' ')[0])),
-  ].sort();
-
-  const total = dates.length;
-
-  let longest = 1;
-  let run = 1;
-  for (let i = 1; i < dates.length; i++) {
-    if (dayDiff(dates[i - 1], dates[i]) === 1) {
-      run++;
-      if (run > longest) longest = run;
-    } else {
-      run = 1;
-    }
-  }
-
-  const today = toLocalDateStr(new Date());
-  const yesterday = toLocalDateStr(new Date(Date.now() - 86_400_000));
-  const last = dates[dates.length - 1];
-
-  let current = 0;
-  if (last === today || last === yesterday) {
-    current = 1;
-    for (let i = dates.length - 2; i >= 0; i--) {
-      if (dayDiff(dates[i], dates[i + 1]) === 1) {
-        current++;
-      } else {
-        break;
-      }
-    }
-  }
-
-  return { current, longest, total };
-}
 
 // ============================================
 // MY 화면
@@ -119,15 +55,8 @@ export default function ProfileScreen() {
       setStats(calculateStreaks(allEntries));
       setProfile(savedProfile);
 
-      if (allEntries.length > 0) {
-        const dates = allEntries
-          .map((e) => e.createdAt.split(' ')[0])
-          .sort();
-        const [y, m, d] = dates[0].split('-');
-        setJoinDate(`${y}.${m}.${d} 첫 기록`);
-      } else {
-        setJoinDate('');
-      }
+      setJoinDate(getFirstRecordDate(allEntries));
+
     } catch (error) {
       console.error('Failed to load profile data:', error);
     }

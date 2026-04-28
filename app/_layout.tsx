@@ -10,8 +10,7 @@ import {
   shouldLock,
   hasPinSet,
 } from '../src/lib/appLock';
-
-const SETTINGS_KEY = '@vhue_settings';
+import { STORAGE_KEYS } from '../src/constants/storageKeys';
 
 export default function RootLayout() {
   const router = useRouter();
@@ -30,7 +29,7 @@ export default function RootLayout() {
 
   const checkInitialLock = async () => {
     try {
-      const raw = await AsyncStorage.getItem(SETTINGS_KEY);
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.SETTINGS);
       const settings = raw ? JSON.parse(raw) : {};
       const lockEnabled = settings.appLock === true;
       const pinExists = await hasPinSet();
@@ -68,7 +67,7 @@ export default function RootLayout() {
     ) {
       // 포그라운드 복귀 → 잠금 여부 판단
       try {
-        const raw = await AsyncStorage.getItem(SETTINGS_KEY);
+        const raw = await AsyncStorage.getItem(STORAGE_KEYS.SETTINGS);
         const settings = raw ? JSON.parse(raw) : {};
         const lockEnabled = settings.appLock === true;
         const autoLockMinutes = settings.autoLockMinutes ?? 1;
