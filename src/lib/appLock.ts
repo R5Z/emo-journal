@@ -1,13 +1,8 @@
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Crypto from 'expo-crypto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../constants/storageKeys';
 
-// ============================================
-// Storage Keys
-// ============================================
-
-const PIN_HASH_KEY = '@vhue_pin_hash';
-const BACKGROUND_TIME_KEY = '@vhue_bg_time';
 
 // ============================================
 // PIN 관리
@@ -24,12 +19,12 @@ async function hashPin(pin: string): Promise<string> {
 /** PIN 저장 */
 export async function savePin(pin: string): Promise<void> {
   const hash = await hashPin(pin);
-  await AsyncStorage.setItem(PIN_HASH_KEY, hash);
+  await AsyncStorage.setItem(STORAGE_KEYS.PIN_HASH, hash);
 }
 
 /** PIN 검증 */
 export async function verifyPin(pin: string): Promise<boolean> {
-  const savedHash = await AsyncStorage.getItem(PIN_HASH_KEY);
+  const savedHash = await AsyncStorage.getItem(STORAGE_KEYS.PIN_HASH);
   if (!savedHash) return false;
   const inputHash = await hashPin(pin);
   return inputHash === savedHash;
@@ -37,13 +32,13 @@ export async function verifyPin(pin: string): Promise<boolean> {
 
 /** PIN 존재 여부 */
 export async function hasPinSet(): Promise<boolean> {
-  const hash = await AsyncStorage.getItem(PIN_HASH_KEY);
+  const hash = await AsyncStorage.getItem(STORAGE_KEYS.PIN_HASH);
   return hash !== null;
 }
 
 /** PIN 삭제 */
 export async function removePin(): Promise<void> {
-  await AsyncStorage.removeItem(PIN_HASH_KEY);
+  await AsyncStorage.removeItem(STORAGE_KEYS.PIN_HASH);
 }
 
 // ============================================
@@ -90,13 +85,13 @@ export async function authenticateWithBiometrics(): Promise<boolean> {
 
 /** 백그라운드 전환 시각 저장 */
 export async function saveBackgroundTime(): Promise<void> {
-  await AsyncStorage.setItem(BACKGROUND_TIME_KEY, Date.now().toString());
+  await AsyncStorage.setItem(STORAGE_KEYS.BACKGROUND_TIME, Date.now().toString());
 }
 
 /** 백그라운드 경과 시간(분) 계산 후 저장값 삭제 */
 export async function getBackgroundElapsedMinutes(): Promise<number> {
-  const raw = await AsyncStorage.getItem(BACKGROUND_TIME_KEY);
-  await AsyncStorage.removeItem(BACKGROUND_TIME_KEY);
+  const raw = await AsyncStorage.getItem(STORAGE_KEYS.BACKGROUND_TIME);
+  await AsyncStorage.removeItem(STORAGE_KEYS.BACKGROUND_TIME);
   if (!raw) return 0;
   const elapsed = (Date.now() - parseInt(raw, 10)) / 60000;
   return elapsed;

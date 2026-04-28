@@ -22,12 +22,12 @@ import {
 } from '../src/lib/notifications';
 import PinSetupModal from '../src/components/PinSetupModal';
 import { savePin, hasPinSet, removePin, getBiometricType } from '../src/lib/appLock';
+import { STORAGE_KEYS } from '../src/constants/storageKeys';
+
 
 // ============================================
 // 설정값 저장/로드
 // ============================================
-
-const STORAGE_KEY = '@vhue_settings';
 
 type Settings = {
   remindOn: boolean;
@@ -61,7 +61,7 @@ const DEFAULT_SETTINGS: Settings = {
 
 async function loadSettings(): Promise<Settings> {
   try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    const raw = await AsyncStorage.getItem(STORAGE_KEYS.SETTINGS);
     if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
   } catch (e) {
     console.error('Failed to load settings:', e);
@@ -71,7 +71,7 @@ async function loadSettings(): Promise<Settings> {
 
 async function saveSettings(settings: Settings) {
   try {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    await AsyncStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
   } catch (e) {
     console.error('Failed to save settings:', e);
   }

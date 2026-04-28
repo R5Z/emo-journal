@@ -12,7 +12,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import dayjs from 'dayjs';
 import { analyzeEmotion } from '../src/domain/emotion/analyzer';
-import { saveEntry, updateEntry } from '../src/services/storage';
+import { saveEntry, updateEntry } from '../src/lib/storage';
 
 export default function EditorScreen() {
   const router = useRouter();
