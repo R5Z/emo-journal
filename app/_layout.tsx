@@ -11,6 +11,7 @@ import {
   hasPinSet,
 } from '../src/lib/appLock';
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
+import { useSettingsStore } from '../src/store/useSettingsStore';
 
 export default function RootLayout() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function RootLayout() {
   // ── 앱 시작 시 잠금 여부 판단 ──
   useEffect(() => {
     checkInitialLock();
+    useSettingsStore.getState().loadSettings();
   }, []);
 
   const checkInitialLock = async () => {

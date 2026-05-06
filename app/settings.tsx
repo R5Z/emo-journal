@@ -23,6 +23,8 @@ import {
 import PinSetupModal from '../src/components/PinSetupModal';
 import { savePin, hasPinSet, removePin, getBiometricType } from '../src/lib/appLock';
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
+import { exportAsJSON, exportAsPDF, importFromJSON, deleteAllData } from '../src/lib/dataManager';
+import { useSettingsStore } from '../src/store/useSettingsStore';
 
 
 // ============================================
@@ -313,6 +315,7 @@ export default function SettingsScreen() {
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [pinIsChange, setPinIsChange] = useState(false);
   const [biometricLabel, setBiometricLabel] = useState('Face ID');
+  const { setFontSize: updateGlobalFontSize, setWeekStart: updateGlobalWeekStart } = useSettingsStore();
 
   useEffect(() => {
   loadSettings().then((s) => {
@@ -470,6 +473,22 @@ export default function SettingsScreen() {
           />
         </Group>
 
+        {/* ── 앱 설정 ── */}
+        <SectionLabel>앱 설정</SectionLabel>
+        <Group>
+          <Row
+            label="글꼴 크기"
+            right={<ValueText>{FONT_SIZE_LABEL[settings.fontSize]}</ValueText>}
+            onPress={() => setFontSizeModalVisible(true)}
+          />
+          <Row
+            label="캘린더 시작 요일"
+            right={<ValueText>{WEEK_START_LABEL[settings.weekStart]}</ValueText>}
+            onPress={() => setWeekStartModalVisible(true)}
+            last
+          />
+        </Group>
+
         {/* ── 보안 및 잠금 ── */}
         <SectionLabel>보안 및 잠금</SectionLabel>
         <Group>
@@ -509,22 +528,6 @@ export default function SettingsScreen() {
               </ValueText>
             }
             onPress={() => setAutoLockModalVisible(true)}
-          />
-          <Row
-            label="일기 암호화"
-            sub="AES-256 단말 내 암호화"
-            right={
-              <Switch
-                value={settings.encryption}
-                onValueChange={(v) => update('encryption', v)}
-                trackColor={{ false: '#E5E5EA', true: '#34C759' }}
-              />
-            }
-          />
-          <Row
-            label="암호화 키 백업"
-            sub="키 분실 시 복구 불가"
-            onPress={() => {}}
             last
           />
         </Group>
@@ -534,34 +537,67 @@ export default function SettingsScreen() {
         <Group>
           <Row
             label="iCloud 동기화"
-            sub={
-              settings.sync
-                ? '마지막 동기화: —'
-                : '동기화가 꺼져 있습니다'
-            }
+            sub="추후 지원 예정"
             right={
               <Switch
-                value={settings.sync}
-                onValueChange={(v) => update('sync', v)}
+                value={false}
+                disabled
                 trackColor={{ false: '#E5E5EA', true: '#34C759' }}
               />
             }
           />
-          <Row label="지금 동기화" onPress={() => {}} />
           <Row
-            label="데이터 내보내기"
-            sub="JSON · PDF · 암호화 백업"
-            onPress={() => {}}
+            label="데이터 내보내기 (JSON)"
+            sub="백업 파일로 저장"
+            onPress={async () => {
+              const ok = await exportAsJSON();
+              if (!ok) Alert.alert('오류', '내보내기에 실패했습니다.');
+            }}
+          />
+          <Row
+            label="데이터 내보내기 (PDF)"
+            sub="읽기 전용 PDF로 저장"
+            onPress={async () => {
+              const ok = await exportAsPDF();
+              if (!ok) Alert.alert('알림', '내보낼 기록이 없거나 오류가 발생했습니다.');
+            }}
           />
           <Row
             label="데이터 가져오기"
-            sub="백업 파일에서 복원"
-            onPress={() => {}}
+            sub="JSON 백업 파일에서 복원"
+            onPress={async () => {
+              const result = await importFromJSON();
+              if (result.success) {
+                Alert.alert('완료', `${result.count}개의 기록을 가져왔습니다.`);
+              } else if (result.error !== '취소됨') {
+                Alert.alert('오류', result.error || '가져오기에 실패했습니다.');
+              }
+            }}
           />
           <Row
             label="전체 데이터 삭제"
             danger
-            onPress={confirmDeleteAll}
+            onPress={() => {
+              Alert.alert(
+                '전체 데이터 삭제',
+                '모든 일기와 설정이 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.',
+                [
+                  { text: '취소', style: 'cancel' },
+                  {
+                    text: '삭제',
+                    style: 'destructive',
+                    onPress: async () => {
+                      const ok = await deleteAllData();
+                      if (ok) {
+                        Alert.alert('완료', '모든 데이터가 삭제되었습니다. 앱을 재시작해 주세요.');
+                      } else {
+                        Alert.alert('오류', '삭제 중 문제가 발생했습니다.');
+                      }
+                    },
+                  },
+                ],
+              );
+            }}
             last
           />
         </Group>
@@ -576,22 +612,6 @@ export default function SettingsScreen() {
             onPress={() => {}}
           />
           <Row label="구매 복원" onPress={() => {}} last />
-        </Group>
-
-        {/* ── 앱 설정 ── */}
-        <SectionLabel>앱 설정</SectionLabel>
-        <Group>
-          <Row
-            label="글꼴 크기"
-            right={<ValueText>{FONT_SIZE_LABEL[settings.fontSize]}</ValueText>}
-            onPress={() => setFontSizeModalVisible(true)}
-          />
-          <Row
-            label="캘린더 시작 요일"
-            right={<ValueText>{WEEK_START_LABEL[settings.weekStart]}</ValueText>}
-            onPress={() => setWeekStartModalVisible(true)}
-            last
-          />
         </Group>
 
         {/* ── 커스터마이징 ── */}
@@ -707,7 +727,10 @@ export default function SettingsScreen() {
           { value: 'large' as const, label: '크게' },
         ]}
         selected={settings.fontSize}
-        onSelect={(v) => update('fontSize', v)}
+        onSelect={(v) => {
+          update('fontSize', v);
+          updateGlobalFontSize(v);
+        }}
         onClose={() => setFontSizeModalVisible(false)}
       />
 
@@ -719,7 +742,10 @@ export default function SettingsScreen() {
           { value: 'monday' as const, label: '월요일' },
         ]}
         selected={settings.weekStart}
-        onSelect={(v) => update('weekStart', v)}
+        onSelect={(v) => {
+          update('weekStart', v);
+          updateGlobalWeekStart(v);  // ← 추가
+        }}
         onClose={() => setWeekStartModalVisible(false)}
       />
 

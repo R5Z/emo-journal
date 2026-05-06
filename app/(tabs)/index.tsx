@@ -21,8 +21,15 @@ import {
 } from "../../src/lib/storage";
 import { useDateStore } from "../../src/store/useDateStore";
 import { JournalEntry } from "../../src/types";
+import { useSettingsStore, FONT_SIZES } from '../../src/store/useSettingsStore';
+
 
 export default function HomeScreen() {
+  const { weekStart, fontSize, loadSettings, loaded } = useSettingsStore();
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
   const [isExpended, setIsExpended] = useState(false);
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -40,25 +47,28 @@ export default function HomeScreen() {
     setSelectedDate(dayjs().format("YYYY-MM-DD"));
   };
 
-  const weekDays = useMemo(
-    () =>
-      Array.from({ length: 7 }).map((_, i) =>
-        dayjs(selectedDate).startOf("week").add(i, "day"),
-      ),
-    [selectedDate],
-  );
+  const weekDays = useMemo(() => {
+    const offset = weekStart === 'monday' ? 1 : 0;
+    const start = dayjs(selectedDate).startOf('week').add(offset, 'day');
+    return Array.from({ length: 7 }).map((_, i) => start.add(i, 'day'));
+  }, [selectedDate, weekStart]);
 
   const calendarGrid = useMemo(() => {
-    const startDay = dayjs(selectedDate).startOf("month").startOf("week");
-    const endDay = dayjs(selectedDate).endOf("month").endOf("week");
+    const offset = weekStart === 'monday' ? 1 : 0;
+    const startDay = dayjs(selectedDate).startOf('month').startOf('week').add(offset, 'day');
+    // 시작일이 해당 월 2일 이후면 1주 앞으로
+    const adjustedStart = startDay.isAfter(dayjs(selectedDate).startOf('month'))
+      ? startDay.subtract(7, 'day')
+      : startDay;
+    const endDay = dayjs(selectedDate).endOf('month').endOf('week').add(offset, 'day');
     const days = [];
-    let curr = startDay;
-    while (curr.isBefore(endDay)) {
+    let curr = adjustedStart;
+    while (curr.isBefore(endDay) || curr.isSame(endDay, 'day')) {
       days.push(curr);
-      curr = curr.add(1, "day");
+      curr = curr.add(1, 'day');
     }
     return days;
-  }, [selectedDate]);
+  }, [selectedDate, weekStart]);
 
   const loadData = useCallback(async () => {
     try {
@@ -243,7 +253,10 @@ export default function HomeScreen() {
         ) : (
           <View style={styles.monthContainer}>
             <View style={styles.weekdayHeader}>
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+              {(weekStart === 'monday'
+                ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+                : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+              ).map((d) => (
                 <Text key={d} style={styles.weekdayLabel}>
                   {d}
                 </Text>
@@ -302,7 +315,7 @@ export default function HomeScreen() {
         {entries.length === 0 ? (
           <View style={styles.emptyContainer}>
             <View style={styles.aiBubble}>
-              <Text style={styles.aiText}>
+              <Text style={[styles.aiText, { fontSize: FONT_SIZES[fontSize].entry }]}>
                 {selectedDate === dayjs().format("YYYY-MM-DD")
                   ? "오늘 무슨 일 있었어?\n네 마음이 궁금해."
                   : "이날은 기록이 없네.\n어떤 하루였는지 들려줄래?"}
