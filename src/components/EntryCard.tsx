@@ -12,6 +12,8 @@ import {
 import { getEmotionDisplay } from "../domain/emotion/formatter";
 import { deleteEntry } from "../lib/storage";
 import { JournalEntry } from "../types";
+import { useSettingsStore, FONT_SIZES } from '../store/useSettingsStore';
+
 
 interface Props {
   entry: JournalEntry;
@@ -22,6 +24,7 @@ export default function EntryCard({ entry, onRefresh }: Props) {
   const [menuVisible, setMenuVisible] = useState(false);
   const { colors } = getEmotionDisplay(entry.emotionResult);
   const router = useRouter();
+  const { fontSize } = useSettingsStore();
 
   // 시간 추출 (YYYY-MM-DD HH:mm:ss -> HH:mm)
   const timeStr = entry.createdAt.split(" ")[1].substring(0, 5);
@@ -94,7 +97,9 @@ export default function EntryCard({ entry, onRefresh }: Props) {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.contentText}>{entry.content}</Text>
+        <Text style={[styles.contentText, { fontSize: FONT_SIZES[fontSize].entry }]}>
+          {entry.content}
+        </Text>
       </View>
 
       {/* 우측 정렬 커스텀 모달 */}
