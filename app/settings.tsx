@@ -633,13 +633,37 @@ export default function SettingsScreen() {
         {/* ── 지원 및 정보 ── */}
         <SectionLabel>지원 및 정보</SectionLabel>
         <Group>
-          <Row label="자주 묻는 질문" onPress={() => {}} />
-          <Row label="피드백 보내기" onPress={() => {}} />
-          <Row label="앱 평가하기" onPress={() => {}} />
-          <Row label="개인정보 처리방침" onPress={() => {}} />
-          <Row label="서비스 이용약관" onPress={() => {}} />
-          <Row label="오픈소스 라이선스" onPress={() => {}} />
-          <Row label="앱 버전" right={<ValueText>v1.0.0</ValueText>} last />
+          <Row
+            label="자주 묻는 질문"
+            onPress={() => router.push('/faq')}
+          />
+          <Row
+            label="피드백 보내기"
+            onPress={() => router.push('/feedback')}
+          />
+          <Row
+            label="앱 평가하기"
+            onPress={() => {
+              Alert.alert('알림', '앱스토어 출시 후 이용 가능합니다.');
+            }}
+          />
+          <Row
+            label="개인정보 처리방침"
+            onPress={() => router.push({ pathname: '/legal', params: { type: 'privacy' } })}
+          />
+          <Row
+            label="서비스 이용약관"
+            onPress={() => router.push({ pathname: '/legal', params: { type: 'terms' } })}
+          />
+          <Row
+            label="오픈소스 라이선스"
+            onPress={() => router.push('/licenses')}
+          />
+          <Row
+            label="앱 버전"
+            right={<ValueText>v1.0.0</ValueText>}
+            last
+          />
         </Group>
 
         {/* ── 로그아웃 / 탈퇴 ── */}

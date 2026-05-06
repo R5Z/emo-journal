@@ -133,14 +133,12 @@ export default function RootLayout() {
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="editor"
-        options={{
-          presentation: 'modal',
-          headerShown: false,
-        }}
-      />
+      <Stack.Screen name="editor" options={{ presentation: 'modal', headerShown: false}} />
       <Stack.Screen name="settings" options={{ headerShown: false }} />
+      <Stack.Screen name="faq" options={{ headerShown: false }} />
+      <Stack.Screen name="feedback" options={{ headerShown: false }} />
+      <Stack.Screen name="legal" options={{ headerShown: false }} />
+      <Stack.Screen name="licenses" options={{ headerShown: false }} />
     </Stack>
   );
 }
