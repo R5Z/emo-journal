@@ -1,6 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, AppStateStatus, View } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDateStore } from '../src/store/useDateStore';
@@ -12,6 +12,8 @@ import {
 } from '../src/lib/appLock';
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
 import { useSettingsStore } from '../src/store/useSettingsStore';
+import { BlurView} from 'expo-blur';
+
 
 export default function RootLayout() {
   const router = useRouter();
@@ -20,6 +22,7 @@ export default function RootLayout() {
 
   // ── 잠금 상태 ──
   const [isLocked, setIsLocked] = useState(false);
+  const [isBackground, setIsBackground] = useState(false);
   const [lockCheckDone, setLockCheckDone] = useState(false);
   const appState = useRef<AppStateStatus>(AppState.currentState);
 
@@ -61,12 +64,14 @@ export default function RootLayout() {
     ) {
       // 백그라운드로 전환 → 시각 저장
       await saveBackgroundTime();
+      setIsBackground(true);
     }
 
     if (
       (appState.current === 'background' || appState.current === 'inactive') &&
       nextState === 'active'
     ) {
+      setIsBackground(false);
       // 포그라운드 복귀 → 잠금 여부 판단
       try {
         const raw = await AsyncStorage.getItem(STORAGE_KEYS.SETTINGS);
@@ -131,14 +136,30 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="editor" options={{ presentation: 'modal', headerShown: false}} />
-      <Stack.Screen name="settings" options={{ headerShown: false }} />
-      <Stack.Screen name="faq" options={{ headerShown: false }} />
-      <Stack.Screen name="feedback" options={{ headerShown: false }} />
-      <Stack.Screen name="legal" options={{ headerShown: false }} />
-      <Stack.Screen name="licenses" options={{ headerShown: false }} />
-    </Stack>
+    <View style={{ flex: 1 }}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="editor" options={{ presentation: 'modal', headerShown: false}} />
+        <Stack.Screen name="settings" options={{ headerShown: false }} />
+        <Stack.Screen name="faq" options={{ headerShown: false }} />
+        <Stack.Screen name="feedback" options={{ headerShown: false }} />
+        <Stack.Screen name="legal" options={{ headerShown: false }} />
+        <Stack.Screen name="licenses" options={{ headerShown: false }} />
+      </Stack>
+
+      {isBackground && (
+        <BlurView
+          intensity={100}
+          tint="light"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+      )}
+    </View>
   );
 }
