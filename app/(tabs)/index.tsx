@@ -22,6 +22,8 @@ import {
 import { useDateStore } from "../../src/store/useDateStore";
 import { JournalEntry } from "../../src/types";
 import { useSettingsStore, FONT_SIZES } from '../../src/store/useSettingsStore';
+import 'dayjs/locale/ko';
+dayjs.locale('ko');
 
 
 export default function HomeScreen() {
@@ -254,8 +256,8 @@ export default function HomeScreen() {
           <View style={styles.monthContainer}>
             <View style={styles.weekdayHeader}>
               {(weekStart === 'monday'
-                ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-                : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                ? ["월", "화", "수", "목", "금", "토", "일"]
+                : ["일", "월", "화", "수", "목", "금", "토"]
               ).map((d) => (
                 <Text key={d} style={styles.weekdayLabel}>
                   {d}

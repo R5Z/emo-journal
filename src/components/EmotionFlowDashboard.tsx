@@ -63,16 +63,11 @@ const SHORT_NAMES: Record<number, string> = {
 };
 const getShortName = (id: number) => SHORT_NAMES[id] || getName(id);
 
-const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
-
 function formatRange(dates: string[]): string {
   if (dates.length === 0) return '';
   const [, fm, fd] = dates[0].split('-').map(Number);
   const [, lm, ld] = dates[dates.length - 1].split('-').map(Number);
-  return `${MONTH_NAMES[fm - 1]} ${fd} – ${MONTH_NAMES[lm - 1]} ${ld}`;
+  return `${fm}월 ${fd}일 – ${lm}월 ${ld}일`;
 }
 
 function generateInsight(daily: DailyEmotion[]): string {
