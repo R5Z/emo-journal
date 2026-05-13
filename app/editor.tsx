@@ -24,7 +24,6 @@ export default function EditorScreen() {
   const isEditing = !!params.id;
   const entryId = params.id ? Number(params.id) : null;
   
-  // [수정] params로 넘어온 날짜를 우선 사용
   const selectedDate = (params.selectedDate as string) || dayjs().format('YYYY-MM-DD');
 
   useEffect(() => {
@@ -39,7 +38,10 @@ export default function EditorScreen() {
   }, [isEditing, params.content]);
 
   const handleSave = async () => {
-  if (!content.trim()) return;
+  if (!content.trim()) {
+    Alert.alert('알림', '내용을 입력해 주세요.');
+    return;
+  }
   try {
     const result = analyzeEmotion(content);
     console.log('분석 결과:', JSON.stringify(result, null, 2)); // 분석 로그
@@ -61,7 +63,26 @@ export default function EditorScreen() {
       style={styles.container}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.navButton}>
+        <TouchableOpacity 
+          onPress={() => {
+            const hasChanges = isEditing
+              ? content !== (params.content as string)
+              : content.trim().length > 0;
+
+            if (hasChanges) {
+              Alert.alert(
+                '작성 중인 내용이 있어요',
+                '나가면 작성 중인 내용이 사라집니다.',
+                [
+                  { text: '계속 작성', style: 'cancel' },
+                  { text: '나가기', style: 'destructive', onPress: () => router.back() },
+                ],
+              );
+            } else {
+              router.back();
+            }
+          }}
+          style={styles.navButton}>
           <Text style={styles.cancelText}>취소</Text>
         </TouchableOpacity>
 
