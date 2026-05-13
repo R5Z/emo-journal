@@ -609,9 +609,15 @@ export default function SettingsScreen() {
           <Row
             label="프리미엄 업그레이드"
             sub="무제한 감정 분석, 고급 리포트, 커스텀 테마"
-            onPress={() => {}}
+            onPress={() => {
+              Alert.alert('알림', '프리미엄 구독은 정식 출시 후 이용 가능합니다.');
+            }}
           />
-          <Row label="구매 복원" onPress={() => {}} last />
+          <Row 
+            label="구매 복원" 
+            onPress={() => {
+              Alert.alert('알림', '복원할 구매 내역이 없습니다.');
+          }} last />
         </Group>
 
         {/* ── 커스터마이징 ── */}

@@ -158,7 +158,7 @@ export const EMOTION_LEXICON: LexiconItem[] = [
   { categoryId: 6, phrase: '쫓기', intensity: 3, matchType: 'contains' },
   { categoryId: 6, phrase: '촉박', intensity: 3, matchType: 'contains' },
   { categoryId: 6, phrase: '과중', intensity: 3, matchType: 'contains' },
-  { categoryId: 6, phrase: '무리', intensity: 2, matchType: 'contains', nlpTag: 'polysemous' },
+  { categoryId: 6, phrase: '무리', intensity: 2, matchType: 'startsWith', nlpTag: 'polysemous' },
   { categoryId: 6, phrase: '쓰러질', intensity: 4, matchType: 'contains' },
   { categoryId: 6, phrase: '터질 것', intensity: 5, matchType: 'phrase' },
   { categoryId: 6, phrase: '한계', intensity: 4, matchType: 'contains' },
