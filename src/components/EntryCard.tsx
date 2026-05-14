@@ -65,7 +65,6 @@ export default function EntryCard({ entry, onRefresh }: Props) {
             try {
               await deleteEntry(entry.id!);
               onRefresh();
-              console.log("✅ 삭제 성공");
             } catch (error) {
               console.error("삭제 실패:", error);
               Alert.alert("오류", "삭제 중 문제가 발생했습니다.");
@@ -85,19 +84,24 @@ export default function EntryCard({ entry, onRefresh }: Props) {
 
       <View style={styles.cardContent}>
         <View style={styles.cardHeader}>
-          <Text style={styles.timeText}>{timeStr}</Text>
+          <Text style={styles.timeText} accessibilityRole="text">{timeStr}</Text>
 
           {/* 세로 더보기 버튼 (⋮) */}
           <TouchableOpacity
             onPress={() => setMenuVisible(true)}
             style={styles.moreButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} // 터치 영역 확장
+            accessibilityRole="button"
+            accessibilityLabel="일기 옵션 열기"
           >
             <Text style={styles.moreButtonText}>{"\u22EE"}</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={[styles.contentText, { fontSize: FONT_SIZES[fontSize].entry }]}>
+        <Text
+          style={[styles.contentText, { fontSize: FONT_SIZES[fontSize].entry }]}
+          accessibilityRole="text"
+        >
           {entry.content}
         </Text>
       </View>
@@ -113,13 +117,23 @@ export default function EntryCard({ entry, onRefresh }: Props) {
         <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.menuContent}>
-              <TouchableOpacity style={styles.menuItem} onPress={handleEdit}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleEdit}
+                accessibilityRole="button"
+                accessibilityLabel="일기 수정"
+              >
                 <Text style={styles.menuText}>수정하기</Text>
               </TouchableOpacity>
 
               <View style={styles.menuDivider} />
 
-              <TouchableOpacity style={styles.menuItem} onPress={handleDelete}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleDelete}
+                accessibilityRole="button"
+                accessibilityLabel="일기 삭제"
+              >
                 <Text style={[styles.menuText, { color: "#FF3B30" }]}>
                   삭제하기
                 </Text>

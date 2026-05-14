@@ -12,9 +12,7 @@ import {
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Profile, DEFAULT_PROFILE } from '../types';
-import { loadProfile, saveProfile } from '../lib/profile';
+import { Profile } from '../types';
 
 
 // ============================================

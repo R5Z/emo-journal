@@ -27,7 +27,6 @@ Notifications.setNotificationHandler({
 export async function requestNotificationPermissions(): Promise<boolean> {
   if (!Device.isDevice) {
     // 시뮬레이터에서도 로컬 알림은 동작하지만, 권한 체크를 위해 true 반환
-    console.log('시뮬레이터: 알림 권한 자동 승인');
     return true;
   }
 
@@ -72,7 +71,6 @@ export async function scheduleDailyReminder(
 
   const granted = await requestNotificationPermissions();
   if (!granted) {
-    console.log('알림 권한이 거부되었습니다.');
     return false;
   }
 
@@ -91,7 +89,6 @@ export async function scheduleDailyReminder(
         repeats: true,
       },
     });
-    console.log(`리마인더 예약: 매일 ${hour}:${String(minute).padStart(2, '0')}`);
     return true;
   } catch (error) {
     console.error('리마인더 예약 실패:', error);

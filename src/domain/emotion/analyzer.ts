@@ -64,7 +64,7 @@ const matchKeywords = (text: string): RawMatch[] => {
       }
 
       case 'exact': {
-        tokens.forEach((token, i) => {
+        tokens.forEach((token) => {
           if (token === item.phrase) {
             const position = text.indexOf(token);
             matches.push({

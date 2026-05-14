@@ -44,7 +44,6 @@ export default function EditorScreen() {
   }
   try {
     const result = analyzeEmotion(content);
-    console.log('분석 결과:', JSON.stringify(result, null, 2)); // 분석 로그
     if (isEditing && entryId) {
       await updateEntry(entryId, content, result);
     } else {
@@ -82,15 +81,23 @@ export default function EditorScreen() {
               router.back();
             }
           }}
-          style={styles.navButton}>
+          style={styles.navButton}
+          accessibilityRole="button"
+          accessibilityLabel="작성 취소"
+        >
           <Text style={styles.cancelText}>취소</Text>
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>
+        <Text style={styles.headerTitle} accessibilityRole="header">
           {isEditing ? '일기 수정' : `${dayjs(selectedDate).format('MM월 DD일')} 일기`}
         </Text>
 
-        <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+        <TouchableOpacity
+          onPress={handleSave}
+          style={styles.saveButton}
+          accessibilityRole="button"
+          accessibilityLabel={isEditing ? '일기 수정 완료' : '일기 저장'}
+        >
           <Text style={styles.saveButtonText}>완료</Text>
         </TouchableOpacity>
       </View>
@@ -103,6 +110,7 @@ export default function EditorScreen() {
         value={content}
         onChangeText={setContent}
         textAlignVertical="top"
+        accessibilityLabel="일기 내용 입력"
       />
     </KeyboardAvoidingView>
   );

@@ -14,15 +14,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   scheduleDailyReminder,
   cancelDailyReminder,
 } from '../src/lib/notifications';
 import PinSetupModal from '../src/components/PinSetupModal';
-import { savePin, hasPinSet, removePin, getBiometricType } from '../src/lib/appLock';
-import { STORAGE_KEYS } from '../src/constants/storageKeys';
+import { savePin, hasPinSet, getBiometricType } from '../src/lib/appLock';
 import { exportAsJSON, exportAsPDF, importFromJSON, deleteAllData } from '../src/lib/dataManager';
 import { useSettingsStore } from '../src/store/useSettingsStore';
 import { Settings, DEFAULT_SETTINGS } from '../src/types';
@@ -62,7 +60,7 @@ const AUTO_LOCK_OPTIONS = [
 // ============================================
 
 function SectionLabel({ children }: { children: string }) {
-  return <Text style={s.sectionLabel}>{children}</Text>;
+  return <Text style={s.sectionLabel} accessibilityRole="header">{children}</Text>;
 }
 
 function Group({ children }: { children: React.ReactNode }) {
@@ -98,7 +96,12 @@ function Row({ label, sub, right, onPress, danger, last }: RowProps) {
 
   if (onPress) {
     return (
-      <TouchableOpacity onPress={onPress} activeOpacity={0.4}>
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.4}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+      >
         {content}
       </TouchableOpacity>
     );
@@ -152,7 +155,7 @@ function OptionPickerModal<T extends string | number>({
         onPress={onClose}
       >
         <View style={s.modalSheet}>
-          <Text style={s.modalTitle}>{title}</Text>
+          <Text style={s.modalTitle} accessibilityRole="header">{title}</Text>
           {options.map((opt, i) => (
             <TouchableOpacity
               key={String(opt.value)}
@@ -164,6 +167,8 @@ function OptionPickerModal<T extends string | number>({
                 onSelect(opt.value);
                 onClose();
               }}
+              accessibilityRole="button"
+              accessibilityLabel={`${title} ${opt.label}`}
             >
               <Text style={s.modalOptionText}>{opt.label}</Text>
               {opt.value === selected && (
@@ -211,7 +216,7 @@ function MessageEditModal({
         onPress={onClose}
       >
         <TouchableOpacity activeOpacity={1} style={s.modalSheet}>
-          <Text style={s.modalTitle}>리마인더 메시지</Text>
+          <Text style={s.modalTitle} accessibilityRole="header">리마인더 메시지</Text>
           <TextInput
             style={s.textInput}
             value={text}
@@ -220,11 +225,14 @@ function MessageEditModal({
             placeholder="알림에 표시될 문구"
             placeholderTextColor="#C7C7CC"
             autoFocus
+            accessibilityLabel="리마인더 메시지 입력"
           />
           <View style={s.modalActions}>
             <TouchableOpacity
               style={s.modalButton}
               onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel="리마인더 메시지 편집 취소"
             >
               <Text style={s.modalButtonText}>취소</Text>
             </TouchableOpacity>
@@ -234,6 +242,8 @@ function MessageEditModal({
                 onSave(text.trim() || DEFAULT_SETTINGS.remindMessage);
                 onClose();
               }}
+              accessibilityRole="button"
+              accessibilityLabel="리마인더 메시지 저장"
             >
               <Text style={[s.modalButtonText, { fontWeight: '600' }]}>
                 저장
@@ -297,7 +307,7 @@ export default function SettingsScreen() {
   }
 };
 
-  const handleTimeChange = (event: any, date?: Date) => {
+  const handleTimeChange = (_event: unknown, date?: Date) => {
   if (Platform.OS === 'android') setTimePickerVisible(false);
   if (date) {
     const next = {
@@ -322,23 +332,6 @@ export default function SettingsScreen() {
     );
   };
 
-  const confirmDeleteAll = () => {
-    Alert.alert(
-      '전체 데이터 삭제',
-      '모든 일기와 설정이 삭제됩니다. 이 작업은 되돌릴 수 없습니다.',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert('알림', '삭제 기능은 다음 단계에서 구현됩니다.');
-          },
-        },
-      ],
-    );
-  };
-
   if (!loaded) {
     return <SafeAreaView style={s.safeArea} />;
   }
@@ -354,11 +347,13 @@ export default function SettingsScreen() {
           onPress={() => router.back()}
           style={s.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityRole="button"
+          accessibilityLabel="뒤로 이동"
         >
           <Ionicons name="chevron-back" size={22} color="#007AFF" />
           <Text style={s.backText}>MY</Text>
         </TouchableOpacity>
-        <Text style={s.headerTitle}>설정</Text>
+        <Text style={s.headerTitle} accessibilityRole="header">설정</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -377,6 +372,8 @@ export default function SettingsScreen() {
                 value={settings.remindOn}
                 onValueChange={(v) => update('remindOn', v)}
                 trackColor={{ false: '#E5E5EA', true: '#34C759' }}
+                accessibilityLabel="일기 작성 리마인더"
+                accessibilityState={{ checked: settings.remindOn }}
               />
             }
           />
@@ -406,6 +403,8 @@ export default function SettingsScreen() {
                 value={settings.weeklyReport}
                 onValueChange={(v) => update('weeklyReport', v)}
                 trackColor={{ false: '#E5E5EA', true: '#34C759' }}
+                accessibilityLabel="주간 감정 리포트"
+                accessibilityState={{ checked: settings.weeklyReport }}
               />
             }
           />
@@ -417,6 +416,8 @@ export default function SettingsScreen() {
                 value={settings.streakAlert}
                 onValueChange={(v) => update('streakAlert', v)}
                 trackColor={{ false: '#E5E5EA', true: '#34C759' }}
+                accessibilityLabel="스트릭 위기 알림"
+                accessibilityState={{ checked: settings.streakAlert }}
               />
             }
             last
@@ -461,6 +462,8 @@ export default function SettingsScreen() {
                   update('appLock', v);
                 }}
                 trackColor={{ false: '#E5E5EA', true: '#34C759' }}
+                accessibilityLabel="앱 잠금"
+                accessibilityState={{ checked: settings.appLock }}
               />
             }
           />
@@ -493,6 +496,8 @@ export default function SettingsScreen() {
                 value={false}
                 disabled
                 trackColor={{ false: '#E5E5EA', true: '#34C759' }}
+                accessibilityLabel="iCloud 동기화"
+                accessibilityState={{ checked: false, disabled: true }}
               />
             }
           />
@@ -629,7 +634,7 @@ export default function SettingsScreen() {
           </Group>
         </View>
         <View style={{ alignItems: 'center', paddingTop: 16 }}>
-          <TouchableOpacity>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="회원 탈퇴">
             <Text style={s.withdrawText}>회원 탈퇴</Text>
           </TouchableOpacity>
         </View>
@@ -654,9 +659,11 @@ export default function SettingsScreen() {
                   style={s.pickerSheet}
                 >
                   <View style={s.pickerHeader}>
-                    <Text style={s.pickerTitle}>리마인더 시간</Text>
+                    <Text style={s.pickerTitle} accessibilityRole="header">리마인더 시간</Text>
                     <TouchableOpacity
                       onPress={() => setTimePickerVisible(false)}
+                      accessibilityRole="button"
+                      accessibilityLabel="리마인더 시간 선택 완료"
                     >
                       <Text style={s.pickerDone}>완료</Text>
                     </TouchableOpacity>

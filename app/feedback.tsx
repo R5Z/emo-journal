@@ -81,7 +81,7 @@ export default function FeedbackScreen() {
         );
         setSending(false);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('오류', '피드백 전송에 실패했습니다.');
       setSending(false);
     }
