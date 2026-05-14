@@ -65,7 +65,6 @@ export default function EntryCard({ entry, onRefresh }: Props) {
             try {
               await deleteEntry(entry.id!);
               onRefresh();
-              console.log("✅ 삭제 성공");
             } catch (error) {
               console.error("삭제 실패:", error);
               Alert.alert("오류", "삭제 중 문제가 발생했습니다.");

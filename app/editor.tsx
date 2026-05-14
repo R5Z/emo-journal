@@ -44,7 +44,6 @@ export default function EditorScreen() {
   }
   try {
     const result = analyzeEmotion(content);
-    console.log('분석 결과:', JSON.stringify(result, null, 2)); // 분석 로그
     if (isEditing && entryId) {
       await updateEntry(entryId, content, result);
     } else {
