@@ -13,10 +13,9 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { getAllEntries } from '../../src/lib/storage';
 import EmotionFlowDashboard from '../../src/components/EmotionFlowDashboard';
 import ProfileEditModal from '../../src/components/ProfileEditModal';
-import { Profile, DEFAULT_PROFILE } from '../../src/types';
+import { Profile, DEFAULT_PROFILE, JournalEntry } from '../../src/types';
 import { loadProfile, saveProfile } from '../../src/lib/profile';
 import { calculateStreaks, getFirstRecordDate, StreakStats } from '../../src/lib/streak';
-import { JournalEntry } from '../../src/types';
 
 
 // ============================================

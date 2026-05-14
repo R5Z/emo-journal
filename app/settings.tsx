@@ -14,15 +14,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   scheduleDailyReminder,
   cancelDailyReminder,
 } from '../src/lib/notifications';
 import PinSetupModal from '../src/components/PinSetupModal';
-import { savePin, hasPinSet, removePin, getBiometricType } from '../src/lib/appLock';
-import { STORAGE_KEYS } from '../src/constants/storageKeys';
+import { savePin, hasPinSet, getBiometricType } from '../src/lib/appLock';
 import { exportAsJSON, exportAsPDF, importFromJSON, deleteAllData } from '../src/lib/dataManager';
 import { useSettingsStore } from '../src/store/useSettingsStore';
 import { Settings, DEFAULT_SETTINGS } from '../src/types';
@@ -297,7 +295,7 @@ export default function SettingsScreen() {
   }
 };
 
-  const handleTimeChange = (event: any, date?: Date) => {
+  const handleTimeChange = (_event: unknown, date?: Date) => {
   if (Platform.OS === 'android') setTimePickerVisible(false);
   if (date) {
     const next = {
@@ -319,23 +317,6 @@ export default function SettingsScreen() {
       '프리미엄 구독 필요',
       '이 기능은 프리미엄 구독 시 이용 가능합니다.',
       [{ text: '확인' }],
-    );
-  };
-
-  const confirmDeleteAll = () => {
-    Alert.alert(
-      '전체 데이터 삭제',
-      '모든 일기와 설정이 삭제됩니다. 이 작업은 되돌릴 수 없습니다.',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert('알림', '삭제 기능은 다음 단계에서 구현됩니다.');
-          },
-        },
-      ],
     );
   };
 

@@ -27,7 +27,7 @@ dayjs.locale('ko');
 
 
 export default function HomeScreen() {
-  const { weekStart, fontSize, loadSettings, loaded } = useSettingsStore();
+  const { weekStart, fontSize, loadSettings } = useSettingsStore();
 
   useEffect(() => {
     loadSettings();

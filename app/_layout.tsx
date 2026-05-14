@@ -11,7 +11,6 @@ import {
   hasPinSet,
 } from '../src/lib/appLock';
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
-import { Settings } from '../src/types';
 import { useSettingsStore } from '../src/store/useSettingsStore';
 import { BlurView} from 'expo-blur';
 
