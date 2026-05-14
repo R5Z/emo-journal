@@ -12,13 +12,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getAllEntries } from '../../src/lib/storage';
 import EmotionFlowDashboard from '../../src/components/EmotionFlowDashboard';
-import ProfileEditModal, {
-  Profile,
-  DEFAULT_PROFILE,
-  loadProfile,
-  saveProfile,
-} from '../../src/components/ProfileEditModal';
+import ProfileEditModal from '../../src/components/ProfileEditModal';
+import { Profile, DEFAULT_PROFILE } from '../../src/types';
+import { loadProfile, saveProfile } from '../../src/lib/profile';
 import { calculateStreaks, getFirstRecordDate, StreakStats } from '../../src/lib/streak';
+import { JournalEntry } from '../../src/types';
 
 
 // ============================================
@@ -33,7 +31,7 @@ export default function ProfileScreen() {
     total: 0,
   });
   const [joinDate, setJoinDate] = useState('');
-  const [entries, setEntries] = useState<any[]>([]);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
   const [editModalVisible, setEditModalVisible] = useState(false);
 

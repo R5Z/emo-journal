@@ -112,3 +112,61 @@ export interface PipelineConfig {
   THIRD_COLOR_RATIO: number;
   NEUTRAL_COLOR: string;
 }
+
+// --- 앱 설정 ---
+
+export type FontSize = 'small' | 'medium' | 'large';
+export type WeekStart = 'sunday' | 'monday';
+
+export interface Settings {
+  remindOn: boolean;
+  remindHour: number;
+  remindMinute: number;
+  remindMessage: string;
+  weeklyReport: boolean;
+  streakAlert: boolean;
+  appLock: boolean;
+  autoLockMinutes: number;
+  encryption: boolean;
+  sync: boolean;
+  fontSize: FontSize;
+  weekStart: WeekStart;
+}
+
+export const DEFAULT_SETTINGS: Settings = {
+  remindOn: true,
+  remindHour: 21,
+  remindMinute: 0,
+  remindMessage: '오늘 하루는 어땠어?',
+  weeklyReport: true,
+  streakAlert: false,
+  appLock: false,
+  autoLockMinutes: 1,
+  encryption: true,
+  sync: false,
+  fontSize: 'medium',
+  weekStart: 'monday',
+};
+
+// --- 프로필 ---
+
+export interface Profile {
+  nickname: string;
+  avatarType: 'emoji' | 'image';
+  avatarEmoji: string;
+  avatarImageUri: string | null;
+}
+
+export const DEFAULT_PROFILE: Profile = {
+  nickname: '뷰러',
+  avatarType: 'emoji',
+  avatarEmoji: '🌈',
+  avatarImageUri: null,
+};
+
+// --- 감정 맵 (달력용) ---
+
+export interface EmotionMap {
+  colors: string[];
+  stops: number[];
+}

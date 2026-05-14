@@ -36,13 +36,6 @@ const getEmotionNames = (topCategories: { categoryId: number }[]): string => {
     .join(', ');
 };
 
-const formatDate = (createdAt: string): string => {
-  const [date, time] = createdAt.split(' ');
-  const [y, m, d] = date.split('-');
-  const timeStr = time ? time.substring(0, 5) : '';
-  return `${y}년 ${Number(m)}월 ${Number(d)}일 ${timeStr}`;
-};
-
 // ============================================
 // JSON Export
 // ============================================

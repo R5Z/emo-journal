@@ -13,44 +13,9 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Profile, DEFAULT_PROFILE } from '../types';
+import { loadProfile, saveProfile } from '../lib/profile';
 
-// ============================================
-// 프로필 저장/로드
-// ============================================
-
-const PROFILE_KEY = '@vhue_profile';
-
-export type Profile = {
-  nickname: string;
-  avatarType: 'emoji' | 'image';
-  avatarEmoji: string;
-  avatarImageUri: string | null;
-};
-
-export const DEFAULT_PROFILE: Profile = {
-  nickname: '뷰러',
-  avatarType: 'emoji',
-  avatarEmoji: '🌈',
-  avatarImageUri: null,
-};
-
-export async function loadProfile(): Promise<Profile> {
-  try {
-    const raw = await AsyncStorage.getItem(PROFILE_KEY);
-    if (raw) return { ...DEFAULT_PROFILE, ...JSON.parse(raw) };
-  } catch (e) {
-    console.error('Failed to load profile:', e);
-  }
-  return DEFAULT_PROFILE;
-}
-
-export async function saveProfile(profile: Profile) {
-  try {
-    await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-  } catch (e) {
-    console.error('Failed to save profile:', e);
-  }
-}
 
 // ============================================
 // 이모지 후보

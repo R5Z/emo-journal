@@ -20,7 +20,7 @@ import {
   initDB,
 } from "../../src/lib/storage";
 import { useDateStore } from "../../src/store/useDateStore";
-import { JournalEntry } from "../../src/types";
+import { JournalEntry, EmotionMap } from "../../src/types";
 import { useSettingsStore, FONT_SIZES } from '../../src/store/useSettingsStore';
 import 'dayjs/locale/ko';
 dayjs.locale('ko');
@@ -41,7 +41,7 @@ export default function HomeScreen() {
   const { selectedDate, setSelectedDate } = useDateStore();
 
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [emotionMap, setEmotionMap] = useState<Record<string, any>>({});
+  const [emotionMap, setEmotionMap] = useState<Record<string, EmotionMap>>({});
 
   const todayNum = dayjs().format("D");
 
