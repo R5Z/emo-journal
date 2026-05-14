@@ -1,9 +1,8 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../constants/storageKeys';
+import { FontSize, WeekStart } from '../types';
 
-type FontSize = 'small' | 'medium' | 'large';
-type WeekStart = 'sunday' | 'monday';
 
 type SettingsState = {
   fontSize: FontSize;

@@ -25,59 +25,9 @@ import { savePin, hasPinSet, removePin, getBiometricType } from '../src/lib/appL
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
 import { exportAsJSON, exportAsPDF, importFromJSON, deleteAllData } from '../src/lib/dataManager';
 import { useSettingsStore } from '../src/store/useSettingsStore';
+import { Settings, DEFAULT_SETTINGS } from '../src/types';
+import { loadSettings, saveSettings } from '../src/lib/settings';
 
-
-// ============================================
-// 설정값 저장/로드
-// ============================================
-
-type Settings = {
-  remindOn: boolean;
-  remindHour: number;
-  remindMinute: number;
-  remindMessage: string;
-  weeklyReport: boolean;
-  streakAlert: boolean;
-  appLock: boolean;
-  autoLockMinutes: number;
-  encryption: boolean;
-  sync: boolean;
-  fontSize: 'small' | 'medium' | 'large';
-  weekStart: 'sunday' | 'monday';
-};
-
-const DEFAULT_SETTINGS: Settings = {
-  remindOn: true,
-  remindHour: 21,
-  remindMinute: 0,
-  remindMessage: '오늘 하루는 어땠어?',
-  weeklyReport: true,
-  streakAlert: false,
-  appLock: false,
-  autoLockMinutes: 1,
-  encryption: true,
-  sync: false,
-  fontSize: 'medium',
-  weekStart: 'monday',
-};
-
-async function loadSettings(): Promise<Settings> {
-  try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEYS.SETTINGS);
-    if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
-  } catch (e) {
-    console.error('Failed to load settings:', e);
-  }
-  return DEFAULT_SETTINGS;
-}
-
-async function saveSettings(settings: Settings) {
-  try {
-    await AsyncStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
-  } catch (e) {
-    console.error('Failed to save settings:', e);
-  }
-}
 
 // ============================================
 // 포맷 헬퍼

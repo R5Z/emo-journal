@@ -3,16 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { EMOTION_CATEGORIES } from '../data/emotion-setup';
+import { CategoryScore, JournalEntry } from '../types';
 
 // ============================================
 // Types
 // ============================================
-
-type CategoryScore = {
-  categoryId: number;
-  totalScore: number;
-  matchCount: number;
-};
 
 type EmotionEntry = {
   createdAt: string;
@@ -319,7 +314,7 @@ function MonthCard({ data }: { data: MonthData }) {
 // ============================================
 
 type Props = {
-  entries: EmotionEntry[];
+  entries: JournalEntry[];
 };
 
 export default function EmotionFlowDashboard({ entries }: Props) {
