@@ -74,10 +74,12 @@ export default function ProfileScreen() {
         {/* ── Header ── */}
         <View style={styles.header}>
           <View style={{ width: 30 }} />
-          <Text style={styles.headerTitle}>마이 페이지</Text>
+          <Text style={styles.headerTitle} accessibilityRole="header">마이 페이지</Text>
           <TouchableOpacity
             style={styles.settingsButton}
             onPress={() => router.push('/settings')}
+            accessibilityRole="button"
+            accessibilityLabel="설정"
           >
             <Ionicons
               name="settings-outline"
@@ -94,21 +96,24 @@ export default function ProfileScreen() {
               <Image
                 source={{ uri: profile.avatarImageUri }}
                 style={{ width: 60, height: 60, borderRadius: 30 }}
+                accessibilityLabel={`${profile.nickname} 프로필 이미지`}
               />
             ) : (
-              <View style={styles.avatar}>
+              <View style={styles.avatar} accessibilityLabel={`${profile.nickname} 프로필 아바타`}>
                 <Text style={styles.avatarEmoji}>{profile.avatarEmoji}</Text>
               </View>
             )}
             <View style={styles.profileInfo}>
-              <Text style={styles.nickname}>{profile.nickname}</Text>
+              <Text style={styles.nickname} accessibilityRole="header">{profile.nickname}</Text>
               {joinDate !== '' && (
-                <Text style={styles.joinDate}>{joinDate}</Text>
+                <Text style={styles.joinDate} accessibilityRole="text">{joinDate}</Text>
               )}
             </View>
             <TouchableOpacity
               style={styles.editButton}
               onPress={() => setEditModalVisible(true)}
+              accessibilityRole="button"
+              accessibilityLabel="프로필 편집"
             >
               <Text style={styles.editButtonText}>편집</Text>
             </TouchableOpacity>
@@ -123,8 +128,8 @@ export default function ProfileScreen() {
             { value: stats.total, label: '총 기록', icon: '📝' },
           ].map((item) => (
             <View key={item.label} style={styles.streakCard}>
-              <Text style={styles.streakNumber}>{item.value}</Text>
-              <Text style={styles.streakLabel}>
+              <Text style={styles.streakNumber} accessibilityRole="text">{item.value}</Text>
+              <Text style={styles.streakLabel} accessibilityRole="text">
                 {item.label} {item.icon}
               </Text>
             </View>

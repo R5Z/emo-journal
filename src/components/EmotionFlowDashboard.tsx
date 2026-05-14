@@ -270,10 +270,13 @@ function MonthCard({ data }: { data: MonthData }) {
         style={s.monthHeader}
         onPress={() => setOpen(!open)}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`${data.label} 감정 흐름 ${open ? '접기' : '펼치기'}`}
+        accessibilityState={{ expanded: open }}
       >
         <View style={s.monthHeaderLeft}>
-          <Text style={s.monthLabel}>{data.label} </Text>
-          <Text style={s.monthRange}>{data.range}</Text>
+          <Text style={s.monthLabel} accessibilityRole="header">{data.label} </Text>
+          <Text style={s.monthRange} accessibilityRole="text">{data.range}</Text>
         </View>
         <Ionicons
           name="chevron-down"
@@ -301,7 +304,7 @@ function MonthCard({ data }: { data: MonthData }) {
             />
           ))}
           <View style={s.insightBox}>
-            <Text style={s.insightText}>{data.insight}</Text>
+            <Text style={s.insightText} accessibilityRole="text">{data.insight}</Text>
           </View>
         </View>
       )}
@@ -328,13 +331,13 @@ export default function EmotionFlowDashboard({ entries }: Props) {
       {/* ── 감정 흐름 ── */}
       <View style={s.section}>
         <View style={s.sectionHeader}>
-          <Text style={s.sectionTitle}>감정 흐름</Text>
-          <Text style={s.sectionYear}>{new Date().getFullYear()}</Text>
+          <Text style={s.sectionTitle} accessibilityRole="header">감정 흐름</Text>
+          <Text style={s.sectionYear} accessibilityRole="text">{new Date().getFullYear()}</Text>
         </View>
 
         {monthlyData.length === 0 ? (
           <View style={s.emptyBox}>
-            <Text style={s.emptyText}>
+            <Text style={s.emptyText} accessibilityRole="text">
               일기를 작성하면 감정 흐름이 여기에 나타나요.
             </Text>
           </View>
@@ -347,7 +350,7 @@ export default function EmotionFlowDashboard({ entries }: Props) {
 
       {/* ── 감정 카테고리 범례 ── */}
       <View style={s.section}>
-        <Text style={s.legendTitle}>감정 카테고리</Text>
+        <Text style={s.legendTitle} accessibilityRole="header">감정 카테고리</Text>
         <View style={s.legendGrid}>
           {EMOTION_CATEGORIES.map((cat) => (
             <View
@@ -357,7 +360,7 @@ export default function EmotionFlowDashboard({ entries }: Props) {
               <View
                 style={[s.legendDot, { backgroundColor: cat.colorHex }]}
               />
-              <Text style={s.legendName}>{cat.name}</Text>
+              <Text style={s.legendName} accessibilityRole="text">{cat.name}</Text>
             </View>
           ))}
         </View>

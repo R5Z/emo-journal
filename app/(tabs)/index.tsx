@@ -188,15 +188,17 @@ export default function HomeScreen() {
       <View {...panResponder.panHandlers} style={styles.calendarHeader}>
         <View style={styles.dragHandle} />
         <View style={styles.monthHeaderRow}>
-          <Text style={styles.monthLabel}>
+          <Text style={styles.monthLabel} accessibilityRole="header">
             {dayjs(selectedDate).format("YYYY년 MM월")}
           </Text>
           <TouchableOpacity
             onPress={handleGoToToday}
             style={styles.todayButton}
+            accessibilityRole="button"
+            accessibilityLabel="오늘로 이동"
           >
             <View style={styles.todayIcon}>
-              <Text style={styles.todayIconText}>{todayNum}</Text>
+              <Text style={styles.todayIconText} accessibilityRole="text">{todayNum}</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -213,6 +215,9 @@ export default function HomeScreen() {
                   onPress={() => !isFuture && setSelectedDate(dateStr)}
                   disabled={isFuture}
                   style={[styles.dayWrapper, isFuture && { opacity: 0.2 }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${day.format("M월 D일")} ${day.format("ddd")} 선택`}
+                  accessibilityState={{ disabled: isFuture, selected: isSelected }}
                 >
                   {emotion ? (
                     <LinearGradient
@@ -280,6 +285,9 @@ export default function HomeScreen() {
                     onPress={() => !isFuture && setSelectedDate(dateStr)}
                     disabled={isFuture}
                     style={styles.gridCell}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${date.format("M월 D일")} 선택`}
+                    accessibilityState={{ disabled: isFuture, selected: isSelected }}
                   >
                     <View
                       style={[
@@ -323,7 +331,12 @@ export default function HomeScreen() {
                   : "이날은 기록이 없네.\n어떤 하루였는지 들려줄래?"}
               </Text>
             </View>
-            <TouchableOpacity style={styles.inputGuide} onPress={goToEditor}>
+            <TouchableOpacity
+              style={styles.inputGuide}
+              onPress={goToEditor}
+              accessibilityRole="button"
+              accessibilityLabel="새 일기 작성"
+            >
               <Text style={styles.guideText}>터치해서 기록하기...</Text>
             </TouchableOpacity>
           </View>

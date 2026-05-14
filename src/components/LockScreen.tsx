@@ -141,7 +141,7 @@ export default function LockScreen({ onUnlock }: Props) {
         </View>
 
         {/* 안내 텍스트 */}
-        <Text style={s.title}>
+        <Text style={s.title} accessibilityRole="header">
           {mode === 'biometric'
             ? `${biometricType}로 잠금 해제`
             : 'PIN 입력'}
@@ -168,7 +168,7 @@ export default function LockScreen({ onUnlock }: Props) {
         )}
 
         {/* 에러 메시지 */}
-        {error !== '' && <Text style={s.errorText}>{error}</Text>}
+        {error !== '' && <Text style={s.errorText} accessibilityRole="text">{error}</Text>}
 
         {/* 생체인증 모드: 재시도 + PIN 전환 버튼 */}
         {mode === 'biometric' && (
@@ -176,6 +176,8 @@ export default function LockScreen({ onUnlock }: Props) {
             <TouchableOpacity
               style={s.biometricButton}
               onPress={attemptBiometric}
+              accessibilityRole="button"
+              accessibilityLabel="생체인증으로 잠금 해제"
             >
               <Ionicons
                 name="finger-print"
@@ -191,6 +193,8 @@ export default function LockScreen({ onUnlock }: Props) {
                   setMode('pin');
                   setError('');
                 }}
+                accessibilityRole="button"
+                accessibilityLabel="PIN으로 입력"
               >
                 <Text style={s.switchText}>PIN으로 입력</Text>
               </TouchableOpacity>
@@ -215,6 +219,8 @@ export default function LockScreen({ onUnlock }: Props) {
                           setError('');
                           attemptBiometric();
                         }}
+                        accessibilityRole="button"
+                        accessibilityLabel="생체인증으로 잠금 해제"
                       >
                         <Ionicons
                           name="finger-print"
@@ -232,6 +238,8 @@ export default function LockScreen({ onUnlock }: Props) {
                         key={key}
                         style={s.key}
                         onPress={handleDelete}
+                        accessibilityRole="button"
+                        accessibilityLabel="뒤로 삭제"
                       >
                         <Ionicons
                           name="backspace-outline"
@@ -247,6 +255,8 @@ export default function LockScreen({ onUnlock }: Props) {
                       style={s.key}
                       onPress={() => handlePinInput(key)}
                       activeOpacity={0.5}
+                      accessibilityRole="button"
+                      accessibilityLabel={`숫자 ${key}`}
                     >
                       <Text style={s.keyText}>{key}</Text>
                     </TouchableOpacity>
