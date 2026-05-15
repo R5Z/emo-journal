@@ -13,6 +13,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { getAllEntries } from '../../src/lib/storage';
 import EmotionFlowDashboard from '../../src/components/EmotionFlowDashboard';
 import ProfileEditModal from '../../src/components/ProfileEditModal';
+import { useTheme } from '../../src/store/useThemeStore';
 import { Profile, DEFAULT_PROFILE, JournalEntry } from '../../src/types';
 import { loadProfile, saveProfile } from '../../src/lib/profile';
 import { calculateStreaks, getFirstRecordDate, StreakStats } from '../../src/lib/streak';
@@ -24,6 +25,7 @@ import { calculateStreaks, getFirstRecordDate, StreakStats } from '../../src/lib
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [stats, setStats] = useState<StreakStats>({
     current: 0,
     longest: 0,
@@ -65,18 +67,18 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <ScrollView
-        style={styles.scrollView}
+        style={[styles.scrollView, { backgroundColor: colors.background }]}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         {/* ── Header ── */}
         <View style={styles.header}>
           <View style={{ width: 30 }} />
-          <Text style={styles.headerTitle} accessibilityRole="header">마이 페이지</Text>
+          <Text style={[styles.headerTitle, { color: colors.textPrimary }]} accessibilityRole="header">마이 페이지</Text>
           <TouchableOpacity
-            style={styles.settingsButton}
+            style={[styles.settingsButton, { backgroundColor: colors.border }]}
             onPress={() => router.push('/settings')}
             accessibilityRole="button"
             accessibilityLabel="설정"
@@ -84,13 +86,13 @@ export default function ProfileScreen() {
             <Ionicons
               name="settings-outline"
               size={22}
-              color="#3C3C43"
+              color={colors.icon}
             />
           </TouchableOpacity>
         </View>
 
         {/* ── Profile Card ── */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.backgroundCard }]}>
           <View style={styles.profileRow}>
             {profile.avatarType === 'image' && profile.avatarImageUri ? (
               <Image
@@ -99,23 +101,23 @@ export default function ProfileScreen() {
                 accessibilityLabel={`${profile.nickname} 프로필 이미지`}
               />
             ) : (
-              <View style={styles.avatar} accessibilityLabel={`${profile.nickname} 프로필 아바타`}>
+              <View style={[styles.avatar, { backgroundColor: colors.border }]} accessibilityLabel={`${profile.nickname} 프로필 아바타`}>
                 <Text style={styles.avatarEmoji}>{profile.avatarEmoji}</Text>
               </View>
             )}
             <View style={styles.profileInfo}>
-              <Text style={styles.nickname} accessibilityRole="header">{profile.nickname}</Text>
+              <Text style={[styles.nickname, { color: colors.textPrimary }]} accessibilityRole="header">{profile.nickname}</Text>
               {joinDate !== '' && (
-                <Text style={styles.joinDate} accessibilityRole="text">{joinDate}</Text>
+                <Text style={[styles.joinDate, { color: colors.textTertiary }]} accessibilityRole="text">{joinDate}</Text>
               )}
             </View>
             <TouchableOpacity
-              style={styles.editButton}
+              style={[styles.editButton, { backgroundColor: colors.editButtonBackground }]}
               onPress={() => setEditModalVisible(true)}
               accessibilityRole="button"
               accessibilityLabel="프로필 편집"
             >
-              <Text style={styles.editButtonText}>편집</Text>
+              <Text style={[styles.editButtonText, { color: colors.tint }]}>편집</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -127,9 +129,9 @@ export default function ProfileScreen() {
             { value: stats.longest, label: '최장', icon: '✨' },
             { value: stats.total, label: '총 기록', icon: '📝' },
           ].map((item) => (
-            <View key={item.label} style={styles.streakCard}>
-              <Text style={styles.streakNumber} accessibilityRole="text">{item.value}</Text>
-              <Text style={styles.streakLabel} accessibilityRole="text">
+            <View key={item.label} style={[styles.streakCard, { backgroundColor: colors.streakCardBackground }]}>
+              <Text style={[styles.streakNumber, { color: colors.textPrimary }]} accessibilityRole="text">{item.value}</Text>
+              <Text style={[styles.streakLabel, { color: colors.textTertiary }]} accessibilityRole="text">
                 {item.label} {item.icon}
               </Text>
             </View>

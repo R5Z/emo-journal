@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../src/store/useThemeStore';
 
 // ============================================
 // 피드백 카테고리
@@ -40,6 +41,7 @@ const FEEDBACK_EMAIL = 'hey@yoonjang.me';
 
 export default function FeedbackScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>(null);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -88,17 +90,17 @@ export default function FeedbackScreen() {
   };
 
   return (
-    <SafeAreaView style={s.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView style={[s.safeArea, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <View style={s.header}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={s.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={22} color="#007AFF" />
-          <Text style={s.backText}>설정</Text>
+          <Ionicons name="chevron-back" size={22} color={colors.tint} />
+          <Text style={[s.backText, { color: colors.tint }]}>설정</Text>
         </TouchableOpacity>
-        <Text style={s.headerTitle}>피드백 보내기</Text>
+        <Text style={[s.headerTitle, { color: colors.textPrimary }]}>피드백 보내기</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -113,14 +115,16 @@ export default function FeedbackScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* 카테고리 선택 */}
-          <Text style={s.sectionLabel}>어떤 종류의 피드백인가요?</Text>
+          <Text style={[s.sectionLabel, { color: colors.textSecondary }]}>어떤 종류의 피드백인가요?</Text>
           <View style={s.categoryGrid}>
             {CATEGORIES.map((cat) => (
               <TouchableOpacity
                 key={cat.id}
                 style={[
                   s.categoryItem,
+                  { backgroundColor: colors.backgroundCard },
                   selectedCategory === cat.id && s.categorySelected,
+                  selectedCategory === cat.id && { borderColor: colors.tint, backgroundColor: colors.tintBackground },
                 ]}
                 onPress={() => setSelectedCategory(cat.id)}
                 activeOpacity={0.6}
@@ -130,6 +134,7 @@ export default function FeedbackScreen() {
                   style={[
                     s.categoryLabel,
                     selectedCategory === cat.id && s.categoryLabelSelected,
+                    { color: selectedCategory === cat.id ? colors.tint : colors.textSecondary },
                   ]}
                 >
                   {cat.label}
@@ -139,19 +144,19 @@ export default function FeedbackScreen() {
           </View>
 
           {/* 메시지 입력 */}
-          <Text style={s.sectionLabel}>내용을 알려주세요</Text>
-          <View style={s.inputGroup}>
+          <Text style={[s.sectionLabel, { color: colors.textSecondary }]}>내용을 알려주세요</Text>
+          <View style={[s.inputGroup, { backgroundColor: colors.backgroundCard }]}>
             <TextInput
-              style={s.textInput}
+              style={[s.textInput, { color: colors.textPrimary }]}
               value={message}
               onChangeText={setMessage}
               placeholder="자세히 적어주시면 큰 도움이 됩니다"
-              placeholderTextColor="#C7C7CC"
+              placeholderTextColor={colors.separator}
               multiline
               textAlignVertical="top"
               maxLength={1000}
             />
-            <Text style={s.charCount}>
+            <Text style={[s.charCount, { color: colors.separator }]}>
               {message.length}/1000
             </Text>
           </View>
@@ -161,7 +166,9 @@ export default function FeedbackScreen() {
             <TouchableOpacity
               style={[
                 s.sendButton,
+                { backgroundColor: colors.tint },
                 (!selectedCategory || message.trim().length < 5) && s.sendButtonDisabled,
+                (!selectedCategory || message.trim().length < 5) && { backgroundColor: colors.buttonDisabled },
               ]}
               onPress={handleSend}
               disabled={sending || !selectedCategory || message.trim().length < 5}
@@ -174,7 +181,7 @@ export default function FeedbackScreen() {
           </View>
 
           {/* 안내 */}
-          <Text style={s.notice}>
+          <Text style={[s.notice, { color: colors.textTertiary }]}>
             피드백은 메일 앱을 통해 전송됩니다.{'\n'}
             보내주신 의견은 앱 개선에 소중하게 반영하겠습니다.
           </Text>

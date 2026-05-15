@@ -13,9 +13,11 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import dayjs from 'dayjs';
 import { analyzeEmotion } from '../src/domain/emotion/analyzer';
 import { saveEntry, updateEntry } from '../src/lib/storage';
+import { useTheme } from '../src/store/useThemeStore';
 
 export default function EditorScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const params = useLocalSearchParams(); 
   const inputRef = useRef<TextInput>(null);
 
@@ -59,9 +61,9 @@ export default function EditorScreen() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.headerBackground, borderBottomColor: colors.separator }]}>
         <TouchableOpacity 
           onPress={() => {
             const hasChanges = isEditing
@@ -85,16 +87,16 @@ export default function EditorScreen() {
           accessibilityRole="button"
           accessibilityLabel="작성 취소"
         >
-          <Text style={styles.cancelText}>취소</Text>
+          <Text style={[styles.cancelText, { color: colors.textTertiary }]}>취소</Text>
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle} accessibilityRole="header">
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]} accessibilityRole="header">
           {isEditing ? '일기 수정' : `${dayjs(selectedDate).format('MM월 DD일')} 일기`}
         </Text>
 
         <TouchableOpacity
           onPress={handleSave}
-          style={styles.saveButton}
+          style={[styles.saveButton, { backgroundColor: colors.tint }]}
           accessibilityRole="button"
           accessibilityLabel={isEditing ? '일기 수정 완료' : '일기 저장'}
         >
@@ -104,9 +106,10 @@ export default function EditorScreen() {
 
       <TextInput
         ref={inputRef}
-        style={styles.input}
+        style={[styles.input, { color: colors.textPrimary, backgroundColor: colors.backgroundSecondary }]}
         multiline
         placeholder="지금의 기분이나 상황을 간단히 남겨보세요."
+        placeholderTextColor={colors.textTertiary}
         value={content}
         onChangeText={setContent}
         textAlignVertical="top"

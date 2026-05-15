@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../store/useThemeStore';
 
 // ============================================
 // Types
@@ -33,6 +34,7 @@ export default function PinSetupModal({
   onClose,
   isChange = false,
 }: Props) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState<Step>('enter');
   const [firstPin, setFirstPin] = useState('');
@@ -111,13 +113,13 @@ export default function PinSetupModal({
       animationType="slide"
       onRequestClose={handleClose}
     >
-      <View style={[s.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={[s.container, { paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: colors.background }]}>
         {/* Header */}
-        <View style={s.header}>
+        <View style={[s.header, { backgroundColor: colors.background }]}>
           <TouchableOpacity onPress={handleClose}>
-            <Text style={s.cancelText}>취소</Text>
+            <Text style={[s.cancelText, { color: colors.tint }]}>취소</Text>
           </TouchableOpacity>
-          <Text style={s.headerTitle}>
+          <Text style={[s.headerTitle, { color: colors.textPrimary }]}>
             {isChange ? 'PIN 변경' : 'PIN 설정'}
           </Text>
           <View style={{ width: 40 }} />
@@ -125,10 +127,10 @@ export default function PinSetupModal({
 
         <View style={s.content}>
           {/* 안내 텍스트 */}
-          <View style={s.lockIcon}>
-            <Ionicons name="keypad" size={32} color="#007AFF" />
+          <View style={[s.lockIcon, { backgroundColor: colors.tintBackground }]}>
+            <Ionicons name="keypad" size={32} color={colors.tint} />
           </View>
-          <Text style={s.title}>
+          <Text style={[s.title, { color: colors.textPrimary }]}>
             {step === 'enter'
               ? '4자리 PIN을 입력해 주세요'
               : '한 번 더 입력해 주세요'}
@@ -153,7 +155,7 @@ export default function PinSetupModal({
           </Animated.View>
 
           {/* Error */}
-          {error !== '' && <Text style={s.errorText}>{error}</Text>}
+          {error !== '' && <Text style={[s.errorText, { color: colors.danger }]}>{error}</Text>}
 
           {/* Keypad */}
           <View style={s.keypad}>
@@ -173,7 +175,7 @@ export default function PinSetupModal({
                         <Ionicons
                           name="backspace-outline"
                           size={28}
-                          color="#3C3C43"
+                          color={colors.textSecondary}
                         />
                       </TouchableOpacity>
                     );
@@ -185,7 +187,7 @@ export default function PinSetupModal({
                       onPress={() => handleInput(key)}
                       activeOpacity={0.5}
                     >
-                      <Text style={s.keyText}>{key}</Text>
+                      <Text style={[s.keyText, { color: colors.textPrimary }]}>{key}</Text>
                     </TouchableOpacity>
                   );
                 })}

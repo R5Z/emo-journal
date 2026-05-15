@@ -20,6 +20,7 @@ import {
   initDB,
 } from "../../src/lib/storage";
 import { useDateStore } from "../../src/store/useDateStore";
+import { useTheme } from "../../src/store/useThemeStore";
 import { JournalEntry, EmotionMap } from "../../src/types";
 import { useSettingsStore, FONT_SIZES } from '../../src/store/useSettingsStore';
 import 'dayjs/locale/ko';
@@ -28,6 +29,7 @@ dayjs.locale('ko');
 
 export default function HomeScreen() {
   const { weekStart, fontSize, loadSettings } = useSettingsStore();
+  const { colors } = useTheme();
 
   useEffect(() => {
     loadSettings();
@@ -184,11 +186,14 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View {...panResponder.panHandlers} style={styles.calendarHeader}>
-        <View style={styles.dragHandle} />
+    <View style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}>
+      <View
+        {...panResponder.panHandlers}
+        style={[styles.calendarHeader, { backgroundColor: colors.headerBackground, borderBottomColor: colors.background }]}
+      >
+        <View style={[styles.dragHandle, { backgroundColor: colors.border }]} />
         <View style={styles.monthHeaderRow}>
-          <Text style={styles.monthLabel} accessibilityRole="header">
+          <Text style={[styles.monthLabel, { color: colors.textPrimary }]} accessibilityRole="header">
             {dayjs(selectedDate).format("YYYY년 MM월")}
           </Text>
           <TouchableOpacity
@@ -197,7 +202,7 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="오늘로 이동"
           >
-            <View style={styles.todayIcon}>
+            <View style={[styles.todayIcon, { backgroundColor: colors.tint }]}>
               <Text style={styles.todayIconText} accessibilityRole="text">{todayNum}</Text>
             </View>
           </TouchableOpacity>
@@ -223,22 +228,24 @@ export default function HomeScreen() {
                     <LinearGradient
                       colors={emotion.colors}
                       locations={emotion.stops}
-                      style={[styles.dayItem, isSelected && styles.selectedDay]}
+                      style={[styles.dayItem, isSelected && styles.selectedDay, isSelected && { borderColor: colors.separator }]}
                     >
-                      <Text style={styles.dayText}>{day.format("ddd")}</Text>
-                      <Text style={styles.dateText}>{day.format("D")}</Text>
+                      <Text style={[styles.dayText, { color: colors.textTertiary }]}>{day.format("ddd")}</Text>
+                      <Text style={[styles.dateText, { color: colors.textPrimary }]}>{day.format("D")}</Text>
                     </LinearGradient>
                   ) : (
                     <View
                       style={[
                         styles.dayItem,
                         isSelected && styles.selectedDayEmpty,
+                        isSelected && { backgroundColor: colors.tint },
                       ]}
                     >
                       <Text
                         style={[
                           styles.dayText,
                           isSelected && styles.selectedDayText,
+                          !isSelected && { color: colors.textTertiary },
                         ]}
                       >
                         {day.format("ddd")}
@@ -247,6 +254,7 @@ export default function HomeScreen() {
                         style={[
                           styles.dateText,
                           isSelected && styles.selectedDayText,
+                          !isSelected && { color: colors.textPrimary },
                         ]}
                       >
                         {day.format("D")}
@@ -264,7 +272,7 @@ export default function HomeScreen() {
                 ? ["월", "화", "수", "목", "금", "토", "일"]
                 : ["일", "월", "화", "수", "목", "금", "토"]
               ).map((d) => (
-                <Text key={d} style={styles.weekdayLabel}>
+                <Text key={d} style={[styles.weekdayLabel, { color: colors.textTertiary }]}>
                   {d}
                 </Text>
               ))}
@@ -293,6 +301,7 @@ export default function HomeScreen() {
                       style={[
                         styles.gridInner,
                         isSelected && styles.gridSelected,
+                        isSelected && { borderColor: colors.tint },
                         !isCurrentMonth && { opacity: 0.3 },
                         isFuture && { opacity: 0.1 },
                       ]}
@@ -308,6 +317,7 @@ export default function HomeScreen() {
                         style={[
                           styles.gridText,
                           isSelected && { fontWeight: "bold" },
+                          { color: colors.textPrimary },
                         ]}
                       >
                         {date.date()}
@@ -321,23 +331,23 @@ export default function HomeScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} style={{ backgroundColor: colors.backgroundSecondary }}>
         {entries.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <View style={styles.aiBubble}>
-              <Text style={[styles.aiText, { fontSize: FONT_SIZES[fontSize].entry }]}>
+            <View style={[styles.aiBubble, { backgroundColor: colors.background }]}>
+              <Text style={[styles.aiText, { fontSize: FONT_SIZES[fontSize].entry, color: colors.textSecondary }]}>
                 {selectedDate === dayjs().format("YYYY-MM-DD")
                   ? "오늘 무슨 일 있었어?\n네 마음이 궁금해."
                   : "이날은 기록이 없네.\n어떤 하루였는지 들려줄래?"}
               </Text>
             </View>
             <TouchableOpacity
-              style={styles.inputGuide}
+              style={[styles.inputGuide, { borderColor: colors.border }]}
               onPress={goToEditor}
               accessibilityRole="button"
               accessibilityLabel="새 일기 작성"
             >
-              <Text style={styles.guideText}>터치해서 기록하기...</Text>
+              <Text style={[styles.guideText, { color: colors.textTertiary }]}>터치해서 기록하기...</Text>
             </TouchableOpacity>
           </View>
         ) : (

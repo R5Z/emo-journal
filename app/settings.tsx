@@ -25,6 +25,8 @@ import { exportAsJSON, exportAsPDF, importFromJSON, deleteAllData } from '../src
 import { useSettingsStore } from '../src/store/useSettingsStore';
 import { Settings, DEFAULT_SETTINGS } from '../src/types';
 import { loadSettings, saveSettings } from '../src/lib/settings';
+import { useTheme, useThemeStore } from '../src/store/useThemeStore';
+import { ThemeMode } from '../src/constants/theme';
 
 
 // ============================================
@@ -55,16 +57,24 @@ const AUTO_LOCK_OPTIONS = [
   { value: 15, label: '15분' },
 ];
 
+const THEME_LABEL: Record<ThemeMode, string> = {
+  system: '시스템 연동',
+  light: '라이트',
+  dark: '다크',
+};
+
 // ============================================
 // 공통 컴포넌트
 // ============================================
 
 function SectionLabel({ children }: { children: string }) {
-  return <Text style={s.sectionLabel} accessibilityRole="header">{children}</Text>;
+  const { colors } = useTheme();
+  return <Text style={[s.sectionLabel, { color: colors.settingsSectionLabel }]} accessibilityRole="header">{children}</Text>;
 }
 
 function Group({ children }: { children: React.ReactNode }) {
-  return <View style={s.group}>{children}</View>;
+  const { colors } = useTheme();
+  return <View style={[s.group, { backgroundColor: colors.settingsGroupBackground }]}>{children}</View>;
 }
 
 type RowProps = {
@@ -77,18 +87,19 @@ type RowProps = {
 };
 
 function Row({ label, sub, right, onPress, danger, last }: RowProps) {
+  const { colors } = useTheme();
   const content = (
-    <View style={[s.row, !last && s.rowBorder]}>
+    <View style={[s.row, !last && s.rowBorder, !last && { borderBottomColor: colors.separator }]}>
       <View style={s.rowLeft}>
-        <Text style={[s.rowLabel, danger && { color: '#FF3B30' }]}>
+        <Text style={[s.rowLabel, { color: danger ? colors.danger : colors.textPrimary }]}>
           {label}
         </Text>
-        {sub && <Text style={s.rowSub}>{sub}</Text>}
+        {sub && <Text style={[s.rowSub, { color: colors.textTertiary }]}>{sub}</Text>}
       </View>
       <View style={s.rowRight}>
         {right}
         {onPress && !right && (
-          <Ionicons name="chevron-forward" size={16} color="#C7C7CC" />
+          <Ionicons name="chevron-forward" size={16} color={colors.separator} />
         )}
       </View>
     </View>
@@ -110,13 +121,15 @@ function Row({ label, sub, right, onPress, danger, last }: RowProps) {
 }
 
 function ValueText({ children }: { children: string }) {
-  return <Text style={s.valueText}>{children}</Text>;
+  const { colors } = useTheme();
+  return <Text style={[s.valueText, { color: colors.textTertiary }]}>{children}</Text>;
 }
 
 function Badge({ text }: { text: string }) {
+  const { colors } = useTheme();
   return (
-    <View style={s.badge}>
-      <Text style={s.badgeText}>{text}</Text>
+    <View style={[s.badge, { backgroundColor: colors.background }]}>
+      <Text style={[s.badgeText, { color: colors.textTertiary }]}>{text}</Text>
     </View>
   );
 }
@@ -142,6 +155,7 @@ function OptionPickerModal<T extends string | number>({
   onSelect: (value: T) => void;
   onClose: () => void;
 }) {
+  const { colors } = useTheme();
   return (
     <Modal
       visible={visible}
@@ -150,18 +164,19 @@ function OptionPickerModal<T extends string | number>({
       onRequestClose={onClose}
     >
       <TouchableOpacity
-        style={s.modalOverlay}
+        style={[s.modalOverlay, { backgroundColor: colors.modalOverlay }]}
         activeOpacity={1}
         onPress={onClose}
       >
-        <View style={s.modalSheet}>
-          <Text style={s.modalTitle} accessibilityRole="header">{title}</Text>
+        <View style={[s.modalSheet, { backgroundColor: colors.modalBackground }]}>
+          <Text style={[s.modalTitle, { color: colors.textPrimary }]} accessibilityRole="header">{title}</Text>
           {options.map((opt, i) => (
             <TouchableOpacity
               key={String(opt.value)}
               style={[
                 s.modalOption,
                 i < options.length - 1 && s.modalOptionBorder,
+                i < options.length - 1 && { borderBottomColor: colors.separator },
               ]}
               onPress={() => {
                 onSelect(opt.value);
@@ -170,9 +185,9 @@ function OptionPickerModal<T extends string | number>({
               accessibilityRole="button"
               accessibilityLabel={`${title} ${opt.label}`}
             >
-              <Text style={s.modalOptionText}>{opt.label}</Text>
+              <Text style={[s.modalOptionText, { color: colors.textPrimary }]}>{opt.label}</Text>
               {opt.value === selected && (
-                <Ionicons name="checkmark" size={20} color="#007AFF" />
+                <Ionicons name="checkmark" size={20} color={colors.tint} />
               )}
             </TouchableOpacity>
           ))}
@@ -198,6 +213,7 @@ function MessageEditModal({
   onClose: () => void;
 }) {
   const [text, setText] = useState(initialValue);
+  const { colors } = useTheme();
 
   useEffect(() => {
     setText(initialValue);
@@ -211,30 +227,30 @@ function MessageEditModal({
       onRequestClose={onClose}
     >
       <TouchableOpacity
-        style={s.modalOverlay}
+        style={[s.modalOverlay, { backgroundColor: colors.modalOverlay }]}
         activeOpacity={1}
         onPress={onClose}
       >
-        <TouchableOpacity activeOpacity={1} style={s.modalSheet}>
-          <Text style={s.modalTitle} accessibilityRole="header">리마인더 메시지</Text>
+        <TouchableOpacity activeOpacity={1} style={[s.modalSheet, { backgroundColor: colors.modalBackground }]}>
+          <Text style={[s.modalTitle, { color: colors.textPrimary }]} accessibilityRole="header">리마인더 메시지</Text>
           <TextInput
-            style={s.textInput}
+            style={[s.textInput, { backgroundColor: colors.inputBackground, color: colors.textPrimary }]}
             value={text}
             onChangeText={setText}
             maxLength={40}
             placeholder="알림에 표시될 문구"
-            placeholderTextColor="#C7C7CC"
+            placeholderTextColor={colors.separator}
             autoFocus
             accessibilityLabel="리마인더 메시지 입력"
           />
-          <View style={s.modalActions}>
+          <View style={[s.modalActions, { borderTopColor: colors.separator }]}>
             <TouchableOpacity
               style={s.modalButton}
               onPress={onClose}
               accessibilityRole="button"
               accessibilityLabel="리마인더 메시지 편집 취소"
             >
-              <Text style={s.modalButtonText}>취소</Text>
+              <Text style={[s.modalButtonText, { color: colors.tint }]}>취소</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={s.modalButton}
@@ -245,7 +261,7 @@ function MessageEditModal({
               accessibilityRole="button"
               accessibilityLabel="리마인더 메시지 저장"
             >
-              <Text style={[s.modalButtonText, { fontWeight: '600' }]}>
+              <Text style={[s.modalButtonText, { color: colors.tint, fontWeight: '600' }]}>
                 저장
               </Text>
             </TouchableOpacity>
@@ -264,6 +280,9 @@ export default function SettingsScreen() {
   const router = useRouter();
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
+  const [themeModalVisible, setThemeModalVisible] = useState(false);
+  const { colors, mode: themeMode } = useTheme();
+  const setThemeMode = useThemeStore((s) => s.setMode);
 
   // Modals
   const [timePickerVisible, setTimePickerVisible] = useState(false);
@@ -333,16 +352,16 @@ export default function SettingsScreen() {
   };
 
   if (!loaded) {
-    return <SafeAreaView style={s.safeArea} />;
+    return <SafeAreaView style={[s.safeArea, { backgroundColor: colors.background }]} />;
   }
 
   const reminderDate = new Date();
   reminderDate.setHours(settings.remindHour, settings.remindMinute, 0, 0);
 
   return (
-    <SafeAreaView style={s.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView style={[s.safeArea, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       {/* 커스텀 헤더 */}
-      <View style={s.header}>
+      <View style={[s.header, { backgroundColor: colors.headerBackground }]}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={s.backButton}
@@ -350,15 +369,15 @@ export default function SettingsScreen() {
           accessibilityRole="button"
           accessibilityLabel="뒤로 이동"
         >
-          <Ionicons name="chevron-back" size={22} color="#007AFF" />
-          <Text style={s.backText}>MY</Text>
+          <Ionicons name="chevron-back" size={22} color={colors.tint} />
+          <Text style={[s.backText, { color: colors.tint }]}>MY</Text>
         </TouchableOpacity>
-        <Text style={s.headerTitle} accessibilityRole="header">설정</Text>
+        <Text style={[s.headerTitle, { color: colors.textPrimary }]} accessibilityRole="header">설정</Text>
         <View style={{ width: 60 }} />
       </View>
 
       <ScrollView
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: colors.background }}
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
@@ -371,7 +390,7 @@ export default function SettingsScreen() {
               <Switch
                 value={settings.remindOn}
                 onValueChange={(v) => update('remindOn', v)}
-                trackColor={{ false: '#E5E5EA', true: '#34C759' }}
+                trackColor={{ false: colors.border, true: colors.tint }}
                 accessibilityLabel="일기 작성 리마인더"
                 accessibilityState={{ checked: settings.remindOn }}
               />
@@ -402,7 +421,7 @@ export default function SettingsScreen() {
               <Switch
                 value={settings.weeklyReport}
                 onValueChange={(v) => update('weeklyReport', v)}
-                trackColor={{ false: '#E5E5EA', true: '#34C759' }}
+                trackColor={{ false: colors.border, true: colors.tint }}
                 accessibilityLabel="주간 감정 리포트"
                 accessibilityState={{ checked: settings.weeklyReport }}
               />
@@ -415,7 +434,7 @@ export default function SettingsScreen() {
               <Switch
                 value={settings.streakAlert}
                 onValueChange={(v) => update('streakAlert', v)}
-                trackColor={{ false: '#E5E5EA', true: '#34C759' }}
+                trackColor={{ false: colors.border, true: colors.tint }}
                 accessibilityLabel="스트릭 위기 알림"
                 accessibilityState={{ checked: settings.streakAlert }}
               />
@@ -427,6 +446,11 @@ export default function SettingsScreen() {
         {/* ── 앱 설정 ── */}
         <SectionLabel>앱 설정</SectionLabel>
         <Group>
+          <Row
+            label="테마"
+            right={<ValueText>{THEME_LABEL[themeMode]}</ValueText>}
+            onPress={() => setThemeModalVisible(true)}
+          />
           <Row
             label="글꼴 크기"
             right={<ValueText>{FONT_SIZE_LABEL[settings.fontSize]}</ValueText>}
@@ -461,7 +485,7 @@ export default function SettingsScreen() {
                   }
                   update('appLock', v);
                 }}
-                trackColor={{ false: '#E5E5EA', true: '#34C759' }}
+                trackColor={{ false: colors.border, true: colors.tint }}
                 accessibilityLabel="앱 잠금"
                 accessibilityState={{ checked: settings.appLock }}
               />
@@ -495,7 +519,7 @@ export default function SettingsScreen() {
               <Switch
                 value={false}
                 disabled
-                trackColor={{ false: '#E5E5EA', true: '#34C759' }}
+                trackColor={{ false: colors.border, true: colors.tint }}
                 accessibilityLabel="iCloud 동기화"
                 accessibilityState={{ checked: false, disabled: true }}
               />
@@ -635,7 +659,7 @@ export default function SettingsScreen() {
         </View>
         <View style={{ alignItems: 'center', paddingTop: 16 }}>
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="회원 탈퇴">
-            <Text style={s.withdrawText}>회원 탈퇴</Text>
+            <Text style={[s.withdrawText, { color: colors.danger }]}>회원 탈퇴</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -650,22 +674,22 @@ export default function SettingsScreen() {
               animationType="slide"
             >
               <TouchableOpacity
-                style={s.modalOverlay}
+                style={[s.modalOverlay, { backgroundColor: colors.modalOverlay }]}
                 activeOpacity={1}
                 onPress={() => setTimePickerVisible(false)}
               >
                 <TouchableOpacity
                   activeOpacity={1}
-                  style={s.pickerSheet}
+                  style={[s.pickerSheet, { backgroundColor: colors.modalBackground }]}
                 >
-                  <View style={s.pickerHeader}>
-                    <Text style={s.pickerTitle} accessibilityRole="header">리마인더 시간</Text>
+                  <View style={[s.pickerHeader, { borderBottomColor: colors.separator }]}>
+                    <Text style={[s.pickerTitle, { color: colors.textPrimary }]} accessibilityRole="header">리마인더 시간</Text>
                     <TouchableOpacity
                       onPress={() => setTimePickerVisible(false)}
                       accessibilityRole="button"
                       accessibilityLabel="리마인더 시간 선택 완료"
                     >
-                      <Text style={s.pickerDone}>완료</Text>
+                      <Text style={[s.pickerDone, { color: colors.tint }]}>완료</Text>
                     </TouchableOpacity>
                   </View>
                   <DateTimePicker
@@ -703,6 +727,19 @@ export default function SettingsScreen() {
         selected={settings.autoLockMinutes}
         onSelect={(v) => update('autoLockMinutes', v)}
         onClose={() => setAutoLockModalVisible(false)}
+      />
+
+      <OptionPickerModal
+        visible={themeModalVisible}
+        title="테마"
+        options={[
+          { value: 'system' as const, label: '시스템 연동' },
+          { value: 'light' as const, label: '라이트' },
+          { value: 'dark' as const, label: '다크' },
+        ]}
+        selected={themeMode}
+        onSelect={(v) => setThemeMode(v)}
+        onClose={() => setThemeModalVisible(false)}
       />
 
       <OptionPickerModal

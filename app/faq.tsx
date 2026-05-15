@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../src/store/useThemeStore';
 
 // ============================================
 // FAQ 데이터
@@ -67,25 +68,27 @@ function AccordionItem({
   isOpen,
   onToggle,
   isLast,
+  colors,
 }: {
   question: string;
   answer: string;
   isOpen: boolean;
   onToggle: () => void;
   isLast: boolean;
+  colors: ReturnType<typeof useTheme>['colors'];
 }) {
   return (
-    <View style={[s.item, !isLast && s.itemBorder]}>
+    <View style={[s.item, !isLast && s.itemBorder, !isLast && { borderBottomColor: colors.separator }]}>
       <TouchableOpacity
         style={s.questionRow}
         onPress={onToggle}
         activeOpacity={0.6}
       >
-        <Text style={s.questionText}>{question}</Text>
+        <Text style={[s.questionText, { color: colors.textPrimary }]}>{question}</Text>
         <Ionicons
           name="chevron-down"
           size={18}
-          color="#C7C7CC"
+          color={colors.separator}
           style={{
             transform: [{ rotate: isOpen ? '180deg' : '0deg' }],
           }}
@@ -93,7 +96,7 @@ function AccordionItem({
       </TouchableOpacity>
       {isOpen && (
         <View style={s.answerBox}>
-          <Text style={s.answerText}>{answer}</Text>
+          <Text style={[s.answerText, { color: colors.settingsSectionLabel }]}>{answer}</Text>
         </View>
       )}
     </View>
@@ -107,19 +110,20 @@ function AccordionItem({
 export default function FAQScreen() {
   const router = useRouter();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const { colors } = useTheme();
 
   return (
-    <SafeAreaView style={s.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView style={[s.safeArea, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <View style={s.header}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={s.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={22} color="#007AFF" />
-          <Text style={s.backText}>설정</Text>
+          <Ionicons name="chevron-back" size={22} color={colors.tint} />
+          <Text style={[s.backText, { color: colors.tint }]}>설정</Text>
         </TouchableOpacity>
-        <Text style={s.headerTitle}>자주 묻는 질문</Text>
+        <Text style={[s.headerTitle, { color: colors.textPrimary }]}>자주 묻는 질문</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -128,7 +132,7 @@ export default function FAQScreen() {
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={s.group}>
+        <View style={[s.group, { backgroundColor: colors.settingsGroupBackground }]}>
           {FAQ_DATA.map((item, i) => (
             <AccordionItem
               key={i}
@@ -139,6 +143,7 @@ export default function FAQScreen() {
                 setOpenIndex(openIndex === i ? null : i)
               }
               isLast={i === FAQ_DATA.length - 1}
+              colors={colors}
             />
           ))}
         </View>

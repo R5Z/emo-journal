@@ -2,24 +2,26 @@ import React from 'react';
 import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity, View, StyleSheet, Platform } from 'react-native';
-import { useDateStore } from '../../src/store/useDateStore'; // 경로 확인 필수!
+import { useDateStore } from '../../src/store/useDateStore';
+import { useTheme } from '../../src/store/useThemeStore';
 
 export default function TabLayout() {
   const router = useRouter();
   const { selectedDate } = useDateStore(); // 전역 날짜 구독
+  const { colors } = useTheme(); // 전역 테마 구독
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#8E8E93',
+        tabBarActiveTintColor: colors.tint,
+        tabBarInactiveTintColor: colors.textTertiary,
         tabBarStyle: {
           height: Platform.OS === 'ios' ? 90 : 70,
           paddingBottom: Platform.OS === 'ios' ? 30 : 10,
-          backgroundColor: '#fff',
+          backgroundColor: colors.tabBarBackground,
           borderTopWidth: 1,
-          borderTopColor: '#F2F2F7',
+          borderTopColor: colors.tabBarBorder,
         },
       }}
     >

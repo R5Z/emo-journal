@@ -13,12 +13,15 @@ import {
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
 import { useSettingsStore } from '../src/store/useSettingsStore';
 import { BlurView} from 'expo-blur';
+import { useThemeStore, useTheme } from '../src/store/useThemeStore';
+
 
 
 export default function RootLayout() {
   const router = useRouter();
   const { setSelectedDate } = useDateStore();
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
+  const { colors } = useTheme();
 
   // ── 잠금 상태 ──
   const [isLocked, setIsLocked] = useState(false);
@@ -30,6 +33,7 @@ export default function RootLayout() {
   useEffect(() => {
     checkInitialLock();
     useSettingsStore.getState().loadSettings();
+    useThemeStore.getState().loadTheme();
   }, []);
 
   const checkInitialLock = async () => {
@@ -136,8 +140,12 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <Stack>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <Stack
+        screenOptions={{
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="editor" options={{ presentation: 'modal', headerShown: false}} />
         <Stack.Screen name="settings" options={{ headerShown: false }} />
