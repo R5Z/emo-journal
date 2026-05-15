@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../src/store/useThemeStore';
 
 // ============================================
 // 임시 텍스트 (추후 실제 법률 문서로 교체)
@@ -90,6 +91,7 @@ const TERMS_OF_SERVICE = `서비스 이용약관
 
 export default function LegalScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const params = useLocalSearchParams<{ type: string }>();
   const isPrivacy = params.type === 'privacy';
 
@@ -97,17 +99,17 @@ export default function LegalScreen() {
   const content = isPrivacy ? PRIVACY_POLICY : TERMS_OF_SERVICE;
 
   return (
-    <SafeAreaView style={s.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView style={[s.safeArea, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <View style={s.header}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={s.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={22} color="#007AFF" />
-          <Text style={s.backText}>설정</Text>
+          <Ionicons name="chevron-back" size={22} color={colors.tint} />
+          <Text style={[s.backText, { color: colors.tint }]}>설정</Text>
         </TouchableOpacity>
-        <Text style={s.headerTitle}>{title}</Text>
+        <Text style={[s.headerTitle, { color: colors.textPrimary }]}>{title}</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -116,11 +118,11 @@ export default function LegalScreen() {
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}
       >
-        <View style={s.card}>
-          <Text style={s.bodyText}>{content}</Text>
+        <View style={[s.card, { backgroundColor: colors.backgroundCard }]}>
+          <Text style={[s.bodyText, { color: colors.textSecondary }]}>{content}</Text>
         </View>
 
-        <Text style={s.placeholder}>
+        <Text style={[s.placeholder, { color: colors.separator }]}>
           본 문서는 임시 작성본이며, 정식 출시 전 법률 검토를 거쳐 교체될 예정입니다.
         </Text>
       </ScrollView>

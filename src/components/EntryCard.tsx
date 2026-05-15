@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { getEmotionDisplay } from "../domain/emotion/formatter";
 import { deleteEntry } from "../lib/storage";
+import { useTheme } from "../store/useThemeStore";
 import { JournalEntry } from "../types";
 import { useSettingsStore, FONT_SIZES } from '../store/useSettingsStore';
 
@@ -25,6 +26,7 @@ export default function EntryCard({ entry, onRefresh }: Props) {
   const { colors } = getEmotionDisplay(entry.emotionResult);
   const router = useRouter();
   const { fontSize } = useSettingsStore();
+  const { colors: themeColors } = useTheme();
 
   // 시간 추출 (YYYY-MM-DD HH:mm:ss -> HH:mm)
   const timeStr = entry.createdAt.split(" ")[1].substring(0, 5);
@@ -76,15 +78,15 @@ export default function EntryCard({ entry, onRefresh }: Props) {
   };
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: themeColors.backgroundCard }]}>
       {/* 좌측 감정 색상 표시 바 */}
       <View
-        style={[styles.indicator, { backgroundColor: colors[0] || "#E5E5EA" }]}
+        style={[styles.indicator, { backgroundColor: colors[0] || themeColors.border }]}
       />
 
       <View style={styles.cardContent}>
         <View style={styles.cardHeader}>
-          <Text style={styles.timeText} accessibilityRole="text">{timeStr}</Text>
+          <Text style={[styles.timeText, { color: themeColors.textTertiary }]} accessibilityRole="text">{timeStr}</Text>
 
           {/* 세로 더보기 버튼 (⋮) */}
           <TouchableOpacity
@@ -94,12 +96,12 @@ export default function EntryCard({ entry, onRefresh }: Props) {
             accessibilityRole="button"
             accessibilityLabel="일기 옵션 열기"
           >
-            <Text style={styles.moreButtonText}>{"\u22EE"}</Text>
+            <Text style={[styles.moreButtonText, { color: themeColors.separator }]}>{"\u22EE"}</Text>
           </TouchableOpacity>
         </View>
 
         <Text
-          style={[styles.contentText, { fontSize: FONT_SIZES[fontSize].entry }]}
+          style={[styles.contentText, { fontSize: FONT_SIZES[fontSize].entry, color: themeColors.textPrimary }]}
           accessibilityRole="text"
         >
           {entry.content}
@@ -115,18 +117,18 @@ export default function EntryCard({ entry, onRefresh }: Props) {
       >
         {/* 모달 바깥쪽 클릭 시 닫기 */}
         <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.menuContent}>
+          <View style={[styles.modalOverlay, { backgroundColor: themeColors.modalOverlay }]}>
+            <View style={[styles.menuContent, { backgroundColor: themeColors.modalBackground }]}>
               <TouchableOpacity
                 style={styles.menuItem}
                 onPress={handleEdit}
                 accessibilityRole="button"
                 accessibilityLabel="일기 수정"
               >
-                <Text style={styles.menuText}>수정하기</Text>
+                <Text style={[styles.menuText, { color: themeColors.textPrimary }]}>수정하기</Text>
               </TouchableOpacity>
 
-              <View style={styles.menuDivider} />
+              <View style={[styles.menuDivider, { backgroundColor: themeColors.background }]} />
 
               <TouchableOpacity
                 style={styles.menuItem}
@@ -134,7 +136,7 @@ export default function EntryCard({ entry, onRefresh }: Props) {
                 accessibilityRole="button"
                 accessibilityLabel="일기 삭제"
               >
-                <Text style={[styles.menuText, { color: "#FF3B30" }]}>
+                <Text style={[styles.menuText, { color: themeColors.danger }]}>
                   삭제하기
                 </Text>
               </TouchableOpacity>

@@ -12,6 +12,7 @@ import {
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useTheme } from '../store/useThemeStore';
 import { Profile } from '../types';
 
 
@@ -43,6 +44,7 @@ export default function ProfileEditModal({
   onSave,
   onClose,
 }: Props) {
+  const { colors } = useTheme();
   const [nickname, setNickname] = useState(initialProfile.nickname);
   const [avatarType, setAvatarType] = useState<Profile['avatarType']>(
     initialProfile.avatarType,
@@ -113,16 +115,16 @@ export default function ProfileEditModal({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={s.overlay}>
-        <View style={s.sheet}>
+      <View style={[s.overlay, { backgroundColor: colors.modalOverlay }]}>
+        <View style={[s.sheet, { backgroundColor: colors.background }]}>
           {/* 헤더 */}
-          <View style={s.header}>
+          <View style={[s.header, { backgroundColor: colors.backgroundCard, borderBottomColor: colors.separator }]}>
             <TouchableOpacity onPress={onClose}>
-              <Text style={s.headerCancel}>취소</Text>
+              <Text style={[s.headerCancel, { color: colors.tint }]}>취소</Text>
             </TouchableOpacity>
-            <Text style={s.headerTitle}>프로필 편집</Text>
+            <Text style={[s.headerTitle, { color: colors.textPrimary }]}>프로필 편집</Text>
             <TouchableOpacity onPress={handleSave}>
-              <Text style={s.headerSave}>저장</Text>
+              <Text style={[s.headerSave, { color: colors.tint }]}>저장</Text>
             </TouchableOpacity>
           </View>
 
@@ -139,16 +141,16 @@ export default function ProfileEditModal({
                     style={{ width: 100, height: 100, borderRadius: 50 }}
                 />
                 ) : (
-                <View style={s.avatarPreview}>
+                <View style={[s.avatarPreview, { backgroundColor: colors.border }]}>
                     <Text style={s.avatarPreviewEmoji}>{avatarEmoji}</Text>
                 </View>
                 )}
               <TouchableOpacity
-                style={s.imagePickerButton}
+                style={[s.imagePickerButton, { backgroundColor: colors.backgroundCard }]}
                 onPress={handlePickImage}
               >
-                <Ionicons name="image-outline" size={18} color="#007AFF" />
-                <Text style={s.imagePickerText}>
+                <Ionicons name="image-outline" size={18} color={colors.tint} />
+                <Text style={[s.imagePickerText, { color: colors.tint }]}>
                   {avatarImageUri ? '사진 변경' : '사진 선택'}
                 </Text>
               </TouchableOpacity>
@@ -160,35 +162,36 @@ export default function ProfileEditModal({
                     setAvatarImageUri(null);
                   }}
                 >
-                  <Text style={s.resetText}>이모지로 돌아가기</Text>
+                  <Text style={[s.resetText, { color: colors.textTertiary }]}>이모지로 돌아가기</Text>
                 </TouchableOpacity>
               )}
             </View>
 
             {/* 닉네임 */}
-            <Text style={s.sectionLabel}>닉네임</Text>
-            <View style={s.inputWrap}>
+            <Text style={[s.sectionLabel, { color: colors.settingsSectionLabel }]}>닉네임</Text>
+            <View style={[s.inputWrap, { backgroundColor: colors.backgroundCard }]}>
               <TextInput
-                style={s.input}
+                style={[s.input, { color: colors.textPrimary }]}
                 value={nickname}
                 onChangeText={setNickname}
                 maxLength={20}
                 placeholder="닉네임 (최대 20자)"
-                placeholderTextColor="#C7C7CC"
+                placeholderTextColor={colors.separator}
               />
             </View>
 
             {/* 이모지 선택 (이미지가 아닐 때만) */}
             {avatarType === 'emoji' && (
               <>
-                <Text style={s.sectionLabel}>이모지 선택</Text>
-                <View style={s.emojiGrid}>
+                <Text style={[s.sectionLabel, { color: colors.settingsSectionLabel }]}>이모지 선택</Text>
+                <View style={[s.emojiGrid, { backgroundColor: colors.backgroundCard }]}>
                   {EMOJI_OPTIONS.map((emoji) => (
                     <TouchableOpacity
                       key={emoji}
                       style={[
                         s.emojiItem,
                         avatarEmoji === emoji && s.emojiItemActive,
+                        avatarEmoji === emoji && { backgroundColor: colors.tintBackground },
                       ]}
                       onPress={() => setAvatarEmoji(emoji)}
                     >

@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../src/store/useThemeStore';
 
 // ============================================
 // 라이선스 데이터 (주요 라이브러리)
@@ -40,19 +41,20 @@ const LICENSES = [
 
 export default function LicensesScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
 
   return (
-    <SafeAreaView style={s.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView style={[s.safeArea, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <View style={s.header}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={s.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={22} color="#007AFF" />
-          <Text style={s.backText}>설정</Text>
+          <Ionicons name="chevron-back" size={22} color={colors.tint} />
+          <Text style={[s.backText, { color: colors.tint }]}>설정</Text>
         </TouchableOpacity>
-        <Text style={s.headerTitle}>오픈소스 라이선스</Text>
+        <Text style={[s.headerTitle, { color: colors.textPrimary }]}>오픈소스 라이선스</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -61,23 +63,23 @@ export default function LicensesScreen() {
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={s.description}>
+        <Text style={[s.description, { color: colors.textTertiary }]}>
           이 앱은 아래의 오픈소스 라이브러리를 사용하고 있습니다.
         </Text>
 
-        <View style={s.group}>
+        <View style={[s.group, { backgroundColor: colors.backgroundCard }]}>
           {LICENSES.map((lib, i) => (
             <TouchableOpacity
               key={lib.name}
-              style={[s.row, i < LICENSES.length - 1 && s.rowBorder]}
+              style={[s.row, i < LICENSES.length - 1 && s.rowBorder, i < LICENSES.length - 1 && { borderBottomColor: colors.separator }]}
               onPress={() => Linking.openURL(lib.url)}
               activeOpacity={0.6}
             >
               <View style={s.rowLeft}>
-                <Text style={s.libName}>{lib.name}</Text>
-                <Text style={s.libLicense}>{lib.license} License</Text>
+                <Text style={[s.libName, { color: colors.textPrimary }]}>{lib.name}</Text>
+                <Text style={[s.libLicense, { color: colors.textTertiary }]}>{lib.license} License</Text>
               </View>
-              <Ionicons name="open-outline" size={16} color="#C7C7CC" />
+              <Ionicons name="open-outline" size={16} color={colors.separator} />
             </TouchableOpacity>
           ))}
         </View>

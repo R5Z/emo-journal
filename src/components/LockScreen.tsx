@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../store/useThemeStore';
 import {
   authenticateWithBiometrics,
   isBiometricAvailable,
@@ -31,6 +32,7 @@ type Mode = 'biometric' | 'pin';
 // ============================================
 
 export default function LockScreen({ onUnlock }: Props) {
+  const { colors } = useTheme();
   const [mode, setMode] = useState<Mode>('biometric');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
@@ -129,19 +131,19 @@ export default function LockScreen({ onUnlock }: Props) {
   ];
 
   return (
-    <SafeAreaView style={s.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <View style={s.content}>
         {/* 아이콘 */}
-        <View style={s.lockIcon}>
+        <View style={[s.lockIcon, { backgroundColor: colors.tintBackground }]}>
           <Ionicons
             name={mode === 'biometric' ? 'lock-closed' : 'keypad'}
             size={32}
-            color="#007AFF"
+            color={colors.tint}
           />
         </View>
 
         {/* 안내 텍스트 */}
-        <Text style={s.title} accessibilityRole="header">
+        <Text style={[s.title, { color: colors.textPrimary }]} accessibilityRole="header">
           {mode === 'biometric'
             ? `${biometricType}로 잠금 해제`
             : 'PIN 입력'}
@@ -168,7 +170,7 @@ export default function LockScreen({ onUnlock }: Props) {
         )}
 
         {/* 에러 메시지 */}
-        {error !== '' && <Text style={s.errorText} accessibilityRole="text">{error}</Text>}
+        {error !== '' && <Text style={[s.errorText, { color: colors.danger }]} accessibilityRole="text">{error}</Text>}
 
         {/* 생체인증 모드: 재시도 + PIN 전환 버튼 */}
         {mode === 'biometric' && (
@@ -182,9 +184,9 @@ export default function LockScreen({ onUnlock }: Props) {
               <Ionicons
                 name="finger-print"
                 size={48}
-                color="#007AFF"
+                color={colors.tint}
               />
-              <Text style={s.biometricButtonText}>다시 시도</Text>
+                <Text style={[s.biometricButtonText, { color: colors.tint }]}>다시 시도</Text>
             </TouchableOpacity>
             {hasPin && (
               <TouchableOpacity
@@ -196,7 +198,7 @@ export default function LockScreen({ onUnlock }: Props) {
                 accessibilityRole="button"
                 accessibilityLabel="PIN으로 입력"
               >
-                <Text style={s.switchText}>PIN으로 입력</Text>
+                <Text style={[s.switchText, { color: colors.textTertiary }]}>PIN으로 입력</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -225,7 +227,7 @@ export default function LockScreen({ onUnlock }: Props) {
                         <Ionicons
                           name="finger-print"
                           size={28}
-                          color="#007AFF"
+                          color={colors.tint}
                         />
                       </TouchableOpacity>
                     ) : (
@@ -244,7 +246,7 @@ export default function LockScreen({ onUnlock }: Props) {
                         <Ionicons
                           name="backspace-outline"
                           size={28}
-                          color="#3C3C43"
+                          color={colors.textSecondary}
                         />
                       </TouchableOpacity>
                     );
@@ -258,7 +260,7 @@ export default function LockScreen({ onUnlock }: Props) {
                       accessibilityRole="button"
                       accessibilityLabel={`숫자 ${key}`}
                     >
-                      <Text style={s.keyText}>{key}</Text>
+                      <Text style={[s.keyText, { color: colors.textPrimary }]}>{key}</Text>
                     </TouchableOpacity>
                   );
                 })}

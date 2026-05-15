@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { EMOTION_CATEGORIES } from '../data/emotion-setup';
+import { useTheme } from '../store/useThemeStore';
 import { CategoryScore, JournalEntry } from '../types';
 
 // ============================================
@@ -199,6 +200,7 @@ function GradientBar({
   daysRecorded: number;
   totalDays: number;
 }) {
+  const { colors: themeColors } = useTheme();
   if (dailyEmotions.length === 0) return null;
 
   const pct = (daysRecorded / totalDays) * 100;
@@ -210,11 +212,11 @@ function GradientBar({
   return (
     <View>
       <View style={[s.barLabels, { width: `${pct}%` }]}>
-        <Text style={s.barLabelText}>1</Text>
-        <Text style={s.barLabelText}>{midDay}</Text>
-        <Text style={s.barLabelText}>{daysRecorded}</Text>
+        <Text style={[s.barLabelText, { color: themeColors.textTertiary }]}>1</Text>
+        <Text style={[s.barLabelText, { color: themeColors.textTertiary }]}>{midDay}</Text>
+        <Text style={[s.barLabelText, { color: themeColors.textTertiary }]}>{daysRecorded}</Text>
       </View>
-      <View style={s.barTrack}>
+      <View style={[s.barTrack, { backgroundColor: themeColors.barTrack }]}>
         <LinearGradient
           colors={colors as [string, string, ...string[]]}
           start={{ x: 0, y: 0 }}
@@ -233,6 +235,7 @@ function DotRow({
   categoryId: number;
   dailyEmotions: DailyEmotion[];
 }) {
+  const { colors } = useTheme();
   const color = getColor(categoryId);
   const name = getShortName(categoryId);
 
@@ -248,20 +251,21 @@ function DotRow({
                   width: active ? 5.5 : 2,
                   height: active ? 5.5 : 2,
                   borderRadius: active ? 2.75 : 1,
-                  backgroundColor: active ? color : '#E5E5EA',
+                  backgroundColor: active ? color : colors.dotInactive,
                 }}
               />
             </View>
           );
         })}
       </View>
-      <Text style={s.dotLabel}>{name}</Text>
+      <Text style={[s.dotLabel, { color: colors.textTertiary }]}>{name}</Text>
     </View>
   );
 }
 
 function MonthCard({ data }: { data: MonthData }) {
   const [open, setOpen] = useState(true);
+  const { colors } = useTheme();
 
   return (
     <View style={s.monthCard}>
@@ -275,13 +279,13 @@ function MonthCard({ data }: { data: MonthData }) {
         accessibilityState={{ expanded: open }}
       >
         <View style={s.monthHeaderLeft}>
-          <Text style={s.monthLabel} accessibilityRole="header">{data.label} </Text>
-          <Text style={s.monthRange} accessibilityRole="text">{data.range}</Text>
+          <Text style={[s.monthLabel, { color: colors.textPrimary }]} accessibilityRole="header">{data.label} </Text>
+          <Text style={[s.monthRange, { color: colors.textTertiary }]} accessibilityRole="text">{data.range}</Text>
         </View>
         <Ionicons
           name="chevron-down"
           size={16}
-          color="#C7C7CC"
+          color={colors.separator}
           style={{ transform: [{ rotate: open ? '180deg' : '0deg' }] }}
         />
       </TouchableOpacity>
@@ -303,8 +307,8 @@ function MonthCard({ data }: { data: MonthData }) {
               dailyEmotions={data.dailyEmotions}
             />
           ))}
-          <View style={s.insightBox}>
-            <Text style={s.insightText} accessibilityRole="text">{data.insight}</Text>
+          <View style={[s.insightBox, { backgroundColor: colors.insightBackground }]}>
+            <Text style={[s.insightText, { color: colors.textSecondary }]} accessibilityRole="text">{data.insight}</Text>
           </View>
         </View>
       )}
@@ -321,6 +325,7 @@ type Props = {
 };
 
 export default function EmotionFlowDashboard({ entries }: Props) {
+  const { colors } = useTheme();
   const monthlyData = useMemo(
     () => processMonthlyData(entries),
     [entries],
@@ -329,15 +334,15 @@ export default function EmotionFlowDashboard({ entries }: Props) {
   return (
     <>
       {/* ── 감정 흐름 ── */}
-      <View style={s.section}>
+      <View style={[s.section, { backgroundColor: colors.backgroundCard }]}>
         <View style={s.sectionHeader}>
-          <Text style={s.sectionTitle} accessibilityRole="header">감정 흐름</Text>
-          <Text style={s.sectionYear} accessibilityRole="text">{new Date().getFullYear()}</Text>
+          <Text style={[s.sectionTitle, { color: colors.textPrimary }]} accessibilityRole="header">감정 흐름</Text>
+          <Text style={[s.sectionYear, { color: colors.textTertiary }]} accessibilityRole="text">{new Date().getFullYear()}</Text>
         </View>
 
         {monthlyData.length === 0 ? (
           <View style={s.emptyBox}>
-            <Text style={s.emptyText} accessibilityRole="text">
+            <Text style={[s.emptyText, { color: colors.textTertiary }]} accessibilityRole="text">
               일기를 작성하면 감정 흐름이 여기에 나타나요.
             </Text>
           </View>
@@ -349,8 +354,8 @@ export default function EmotionFlowDashboard({ entries }: Props) {
       </View>
 
       {/* ── 감정 카테고리 범례 ── */}
-      <View style={s.section}>
-        <Text style={s.legendTitle} accessibilityRole="header">감정 카테고리</Text>
+      <View style={[s.section, { backgroundColor: colors.backgroundCard }]}>
+        <Text style={[s.legendTitle, { color: colors.textPrimary }]} accessibilityRole="header">감정 카테고리</Text>
         <View style={s.legendGrid}>
           {EMOTION_CATEGORIES.map((cat) => (
             <View
@@ -360,7 +365,7 @@ export default function EmotionFlowDashboard({ entries }: Props) {
               <View
                 style={[s.legendDot, { backgroundColor: cat.colorHex }]}
               />
-              <Text style={s.legendName} accessibilityRole="text">{cat.name}</Text>
+              <Text style={[s.legendName, { color: colors.textSecondary }]} accessibilityRole="text">{cat.name}</Text>
             </View>
           ))}
         </View>
